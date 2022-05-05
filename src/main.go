@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/text/encoding/simplifiedchinese"
+	"github.com/xuzhuoxi/SVNArchiver/src/command"
 	"os/exec"
 )
 
@@ -15,6 +15,6 @@ func main() {
 		return
 	}
 
-	decodeBytes, _ := simplifiedchinese.GB18030.NewDecoder().Bytes(out)
-	fmt.Println("返回：", string(decodeBytes))
+	fmt.Println("返回：", command.Bytes2String(out))
+
 }
