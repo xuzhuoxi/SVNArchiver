@@ -2,19 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/command"
-	"os/exec"
+	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 )
 
 func main() {
-	//cmd := exec.Command("ipconfig")
-	cmd := exec.Command("svn", "help")
-	out, err := cmd.CombinedOutput()
+	path := `D:/workspaces/Project2204/Project2204_Common/Configs/source`
+
+	log, err := svn.QueryLog(path)
+
 	if nil != err {
 		fmt.Println("错误：", err)
 		return
 	}
-
-	fmt.Println("返回：", command.Bytes2String(out))
-
+	fmt.Println("成功：", log.Name.Local, log.Name.Space, len(log.LogEntries))
 }

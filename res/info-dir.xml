@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+    <entry
+            kind="dir"
+            path="."
+            revision="59">
+        <url>http://svn.redbox.com:2222/opt/svn/client/Project2204/Project2204_Common/Configs/source</url>
+        <relative-url>^/Project2204/Project2204_Common/Configs/source</relative-url>
+        <repository>
+            <root>http://svn.redbox.com:2222/opt/svn/client</root>
+            <uuid>d38edd07-be02-41ba-9cf5-b1572cbf47b0</uuid>
+        </repository>
+        <wc-info>
+            <wcroot-abspath>D:/workspaces/Project2204/Project2204_Common</wcroot-abspath>
+            <schedule>normal</schedule>
+            <depth>infinity</depth>
+        </wc-info>
+        <commit
+                revision="45">
+            <author>xuzhuoxi</author>
+            <date>2022-04-25T03:30:51.673349Z</date>
+        </commit>
+    </entry>
+</info>

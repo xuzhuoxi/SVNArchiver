@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diff>
+    <paths>
+        <path
+                item="added"
+                props="none"
+                kind="file">C_材料总表.xlsx
+        </path>
+        <path
+                item="added"
+                props="none"
+                kind="file">D_多媒体.xlsx
+        </path>
+        <path
+                item="added"
+                props="none"
+                kind="file">tmp_const.xlsx
+        </path>
+        <path
+                item="added"
+                props="none"
+                kind="file">tmp_title.xlsx
+        </path>
+        <path
+                item="added"
+                props="none"
+                kind="file">配置表说明.md
+        </path>
+        <path
+                item="added"
+                props="none"
+                kind="dir">.
+        </path>
+    </paths>
+</diff>
