@@ -5,10 +5,11 @@ const (
 )
 
 const (
-	SubInfo = "info"
-	SubLog  = "log"
-	SubList = "list"
-	SubDiff = "diff"
+	SubInfo   = "info"
+	SubLog    = "log"
+	SubList   = "list"
+	SubDiff   = "diff"
+	SubExport = "export"
 )
 
 const (
