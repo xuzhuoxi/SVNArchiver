@@ -1,4 +1,4 @@
-package command
+package lib
 
 import (
 	"golang.org/x/text/encoding/simplifiedchinese"

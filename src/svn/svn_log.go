@@ -7,9 +7,15 @@ import (
 	"os/exec"
 )
 
+// svn log 命令主要针对文件
+
 type LogRoot struct {
 	Name       xml.Name   `xml:"log"`
 	LogEntries []LogEntry `xml:"logentry"`
+}
+
+func (l *LogRoot) String() string {
+	return fmt.Sprintf("{Name:%v, Entries:%v}", l.Name, l.LogEntries)
 }
 
 // 返回变动版本号
@@ -65,6 +71,10 @@ type LogEntry struct {
 	Author   string `xml:"author"`
 	Date     string `xml:"date"`
 	Msg      string `xml:"msg"`
+}
+
+func (l LogEntry) String() string {
+	return fmt.Sprintf("{Revision:%d, Author:%s, Date:%s, Msg:%s}", l.Revision, l.Author, l.Date, l.Msg)
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.log.html

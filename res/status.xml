@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<status>
+	<target path=".">
+		<entry path=".">
+			<wc-status props="none" item="normal" revision="0">
+				<commit revision="0">
+					<date>2022-07-07T11:59:00.220494Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="game">
+			<wc-status props="none" item="normal" revision="4">
+				<commit revision="4">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:14:08.495644Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="game\IMG_1683.JPG">
+			<wc-status props="normal" item="normal" revision="4">
+				<commit revision="4">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:14:08.495644Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="game\helloworld.txt">
+			<wc-status props="none" item="normal" revision="7">
+				<commit revision="7">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:54:50.954874Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="helloworld.txt">
+			<wc-status item="normal" revision="6" props="normal">
+				<commit revision="6">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:54:25.799334Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="status.xml">
+			<wc-status item="unversioned" props="none">
+</wc-status>
+		</entry>
+		<entry path="v2-915c5176b0e6619c6ba12e14caa281c4_720w.jpg">
+			<wc-status props="normal" item="normal" revision="3">
+				<commit revision="3">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:13:44.325975Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="v2-9dcc53d5ce08ac3ddb25c40a133ca7f3_1440w.jpg">
+			<wc-status item="normal" revision="3" props="normal">
+				<commit revision="3">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:13:44.325975Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="临时记录.md">
+			<wc-status item="normal" revision="8" props="none">
+				<commit revision="8">
+					<author>xuzhuoxi</author>
+					<date>2022-07-08T14:40:40.350266Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+		<entry path="烛武.txt">
+			<wc-status props="normal" item="normal" revision="1">
+				<commit revision="1">
+					<author>xuzhuoxi</author>
+					<date>2022-07-07T12:03:41.039449Z</date>
+				</commit>
+			</wc-status>
+		</entry>
+	</target>
+</status>

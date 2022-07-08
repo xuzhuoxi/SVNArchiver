@@ -2,17 +2,36 @@ package main
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/svn"
+	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
+	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/core"
 )
 
 func main() {
-	path := `D:/workspaces/Project2204/Project2204_Common/Configs/source`
+	cmdFlags, err := env.ParseFlags()
+	if nil != err {
+		fmt.Println(err)
+		return
+	}
+	vCtx, lCtx, archCtx, err := cmdFlags.GetContext()
+	if nil != err {
+		fmt.Println(err)
+		return
+	}
+	core.HandleVersion(vCtx)
+	core.HandleStatus(lCtx)
+	core.HandleArch(archCtx)
+}
 
-	log, err := svn.QueryLog(path)
+func demo() {
+	path := `H:/SvnTest`
+
+	//log, err := svn.QueryLog(path)
+	log, err := svnversion.QueryVersion(path)
 
 	if nil != err {
 		fmt.Println("错误：", err)
 		return
 	}
-	fmt.Println("成功：", log.Name.Local, log.Name.Space, len(log.LogEntries))
+	fmt.Println("成功：", log)
 }

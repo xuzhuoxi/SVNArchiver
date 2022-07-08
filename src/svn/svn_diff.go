@@ -6,6 +6,8 @@ import (
 	"os/exec"
 )
 
+// svn diff 命令主要针对文件
+
 const (
 	DiffItemAdded    = "added"
 	DiffItemModified = "modified"

@@ -18,7 +18,7 @@ type InfoEntry struct {
 	RelativeUrl string         `xml:"relative-url"`
 	Repository  InfoRepository `xml:"repository"`
 	WcInfo      InfoWcInfo     `xml:"wc-info"`
-	Commit      SvnCommit      `xml:"commit"`
+	Commit      CommitEntry    `xml:"commit"`
 }
 
 type InfoRepository struct {

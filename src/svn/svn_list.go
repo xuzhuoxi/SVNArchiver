@@ -6,20 +6,20 @@ import (
 )
 
 type ListRoot struct {
-	Name xml.Name `xml:"lists"`
-	List ListList `xml:"list"`
+	Name xml.Name      `xml:"lists"`
+	List ListEntryList `xml:"list"`
 }
 
-type ListList struct {
-	Path    string      `xml:"path"`
+type ListEntryList struct {
+	Path    string      `xml:"path,attr"`
 	Entries []ListEntry `xml:"entry"`
 }
 
 type ListEntry struct {
-	Kind   string    `xml:"kind,attr"`
-	Name   string    `xml:"name"`
-	Size   int       `xml:"size"`
-	Commit SvnCommit `xml:"commit"`
+	Kind   string      `xml:"kind,attr"`
+	Name   string      `xml:"name"`
+	Size   int         `xml:"size"`
+	Commit CommitEntry `xml:"commit"`
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.list.html

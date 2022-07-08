@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <info>
-    <entry
-            path="tmp_const.xlsx"
-            revision="59"
-            kind="file">
-        <url>http://svn.redbox.com:2222/opt/svn/client/Project2204/Project2204_Common/Configs/source/tmp_const.xlsx
+	<entry path="tmp_const.xlsx" revision="59" kind="file">
+		<url>http://svn.redbox.com:2222/opt/svn/client/Project2204/Project2204_Common/Configs/source/tmp_const.xlsx
         </url>
-        <relative-url>^/Project2204/Project2204_Common/Configs/source/tmp_const.xlsx</relative-url>
-        <repository>
-            <root>http://svn.redbox.com:2222/opt/svn/client</root>
-            <uuid>d38edd07-be02-41ba-9cf5-b1572cbf47b0</uuid>
-        </repository>
-        <wc-info>
-            <wcroot-abspath>D:/workspaces/Project2204/Project2204_Common</wcroot-abspath>
-            <schedule>normal</schedule>
-            <depth>infinity</depth>
-            <text-updated>2022-04-29T06:20:13.861169Z</text-updated>
-            <checksum>50a0bfcd65cfd5c6c3d5c6b4ad1cee217fddebb6</checksum>
-        </wc-info>
-        <commit
-                revision="37">
-            <author>xuzhuoxi</author>
-            <date>2022-04-19T08:04:27.656025Z</date>
-        </commit>
-    </entry>
+		<relative-url>^/Project2204/Project2204_Common/Configs/source/tmp_const.xlsx</relative-url>
+		<repository>
+			<root>http://svn.redbox.com:2222/opt/svn/client</root>
+			<uuid>d38edd07-be02-41ba-9cf5-b1572cbf47b0</uuid>
+		</repository>
+		<wc-info>
+			<wcroot-abspath>D:/workspaces/Project2204/Project2204_Common</wcroot-abspath>
+			<schedule>normal</schedule>
+			<depth>infinity</depth>
+			<text-updated>2022-04-29T06:20:13.861169Z</text-updated>
+			<checksum>50a0bfcd65cfd5c6c3d5c6b4ad1cee217fddebb6</checksum>
+		</wc-info>
+		<commit revision="37">
+			<author>xuzhuoxi</author>
+			<date>2022-04-19T08:04:27.656025Z</date>
+		</commit>
+	</entry>
 </info>
