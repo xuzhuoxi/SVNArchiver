@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"encoding/xml"
 	"fmt"
-	"sort"
 )
 
 const (
@@ -15,67 +14,67 @@ const (
 )
 
 type StatusResult struct {
-	Name         xml.Name      `xml:"status"`
-	StatusTarget *StatusTarget `xml:"target"`
+	Name         xml.Name            `xml:"status"`
+	StatusTarget *StatusResultTarget `xml:"target"`
 }
 
-func (r *StatusResult) HandleResult() {
-	r.StatusTarget.EntryList.Filter()
-	r.StatusTarget.EntryList.Sort()
+func (o *StatusResult) HandleResult() {
+	o.StatusTarget.EntryList.Filter()
+	o.StatusTarget.EntryList.Sort()
 }
 
-type StatusTarget struct {
-	Path      string          `xml:"path,attr"`
-	EntryList StatusEntryList `xml:"entry"`
+type StatusResultTarget struct {
+	Path      string                `xml:"path,attr"`
+	EntryList StatusResultEntryList `xml:"entry"`
 }
 
-func (st *StatusTarget) String() string {
-	return fmt.Sprintf("{Path=%s, List=%v}", st.Path, st.EntryList)
+func (o *StatusResultTarget) String() string {
+	return fmt.Sprintf("{Path=%s, List=%v}", o.Path, o.EntryList)
 }
 
-type StatusEntryList []StatusEntry
+type StatusResultEntryList []*StatusResultEntry
 
-func (l StatusEntryList) Len() int {
-	return len(l)
+func (o StatusResultEntryList) Len() int {
+	return len(o)
 }
 
-func (l StatusEntryList) Less(i, j int) bool {
-	return l[j].WcStatus.Commit.Revision < l[i].WcStatus.Commit.Revision
+func (o StatusResultEntryList) Less(i, j int) bool {
+	return o[j].WcStatus.Commit.Revision < o[i].WcStatus.Commit.Revision
 }
 
-func (l StatusEntryList) Swap(i, j int) {
-	l[i], l[j] = l[j], l[i]
+func (o StatusResultEntryList) Swap(i, j int) {
+	o[i], o[j] = o[j], o[i]
 }
 
-func (l StatusEntryList) Sort() {
-	sort.Sort(l)
+func (o StatusResultEntryList) Sort() {
+	//sort.Sort(o)
 }
 
-func (l StatusEntryList) Filter() {
-	for index := l.Len() - 1; index >= 0; index -= 1 {
-		if !l[index].IsNormalCommitted() {
-			l = append(l[:index], l[index+1:]...)
+func (o StatusResultEntryList) Filter() {
+	for index := o.Len() - 1; index >= 0; index -= 1 {
+		if !o[index].IsNormalCommitted() {
+			o = append(o[:index], o[index+1:]...)
 		}
 	}
 }
 
-type StatusEntry struct {
+type StatusResultEntry struct {
 	Path     string          `xml:"path,attr"`
 	WcStatus *StatusWcStatus `xml:"wc-status"`
 }
 
-func (se *StatusEntry) String() string {
-	return fmt.Sprintf("{Path=%s, Status=%v}", se.Path, se.WcStatus)
+func (o *StatusResultEntry) String() string {
+	return fmt.Sprintf("{Path=%s, Status=%v}", o.Path, o.WcStatus)
 }
 
-func (se *StatusEntry) IsNormalCommitted() bool {
-	if se.WcStatus == nil {
+func (o *StatusResultEntry) IsNormalCommitted() bool {
+	if o.WcStatus == nil {
 		return false
 	}
-	if se.WcStatus.Item != StatusItemNormal {
+	if o.WcStatus.Item != StatusItemNormal {
 		return false
 	}
-	if se.WcStatus.Commit == nil {
+	if o.WcStatus.Commit == nil {
 		return false
 	}
 	return true
@@ -88,9 +87,9 @@ type StatusWcStatus struct {
 	Commit   *CommitEntry `xml:"commit"`
 }
 
-func (wc *StatusWcStatus) String() string {
+func (o *StatusWcStatus) String() string {
 	return fmt.Sprintf("{Item=%s, Revision=%d, Props=%s, Commit=%v}",
-		wc.Item, wc.Revision, wc.Props, wc.Commit)
+		o.Item, o.Revision, o.Props, o.Commit)
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.status.html
@@ -99,7 +98,7 @@ func (wc *StatusWcStatus) String() string {
 // path使用URL时支持支持多个路径
 // 版本号是整个svn仓库唯一共享的，所以这里返回的会出现断层情况
 func QueryStatus(path string) (l *StatusResult, err error) {
-	cmd := exec.Command(CommandName, SubStatus, ArgVerbose, ArgXml, path)
+	cmd := exec.Command(MainCmd, SubCmdStatus, ArgVerbose, ArgXml, path)
 	out, err := cmd.CombinedOutput()
 	if nil != err {
 		return nil, err

@@ -13,14 +13,19 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	vCtx, lCtx, archCtx, err := cmdFlags.GetContext()
+
+	if ctx := cmdFlags.GetLogContext(); nil != ctx {
+		core.HandleLog(ctx)
+	}
+
+	ctx, err := cmdFlags.GetArchContext()
 	if nil != err {
 		fmt.Println(err)
 		return
 	}
-	core.HandleVersion(vCtx)
-	core.HandleStatus(lCtx)
-	core.HandleArch(archCtx)
+	if ctx != nil {
+		core.HandleArch(ctx)
+	}
 }
 
 func demo() {

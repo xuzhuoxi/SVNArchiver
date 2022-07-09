@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-func HandleStatus(ctx *env.ListContext) {
+func HandleStatus(ctx *env.LogContext) {
 	rs, err := svn.QueryStatus(ctx.TargetPath)
 	if nil != err {
 		fmt.Println("QueryStatus Error:", err)

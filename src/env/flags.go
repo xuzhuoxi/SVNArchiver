@@ -14,7 +14,7 @@ import (
 
 type CmdFlags struct {
 	EnvPath    string // 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
-	List       int
+	LogSize    int
 	TargetPath string
 	ArchPath   string
 	VerRange   string
@@ -23,36 +23,34 @@ type CmdFlags struct {
 	defaultEvn bool
 }
 
-func (f *CmdFlags) GetContext() (vCtx *VersionContext, lCtx *ListContext, aCtx *ArchContext, err error) {
-	if f.isVersionCommand() {
-		vCtx = &VersionContext{TargetPath: f.TargetPath}
-		return
+func (f *CmdFlags) GetLogContext() (ctx *LogContext) {
+	if !f.isLogCommand() {
+		return nil
 	}
-	if f.isListCommand() {
-		lCtx = &ListContext{TargetPath: f.TargetPath, MaxCount: f.List}
-		return
+	return &LogContext{TargetPath: f.TargetPath, LogSize: f.LogSize}
+}
+
+func (f *CmdFlags) GetArchContext() (ctx *ArchContext, err error) {
+	if !f.isVerArchCommand() {
+		return nil, nil
 	}
-	if f.isVerArchCommand() {
-		s, t, e := f.parseVer()
-		if nil != e {
-			err = e
-			return
-		}
-		aCtx = &ArchContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartVer: s, TargetVer: t}
-		return
+	s, t, e := f.parseVer()
+	if nil != e {
+		return nil, e
 	}
-	if f.isDateArchCommand() {
-		s, t, e := f.parseDate()
-		if nil != e {
-			err = e
-			return
-		}
-		ctx := &ArchDateContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartDate: s, TargetDate: t}
-		aCtx = ctx.GetArchContext()
-		return
+	return &ArchContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartVer: s, TargetVer: t}, nil
+}
+
+func (f *CmdFlags) GetDateArchContext() (ctx *ArchContext, err error) {
+	if !f.isDateArchCommand() {
+		return nil, nil
 	}
-	err = errors.New("Context Error! ")
-	return
+	s, t, e := f.parseDate()
+	if nil != e {
+		return nil, e
+	}
+	dCtx := &ArchDateContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartDate: s, TargetDate: t}
+	return dCtx.GetArchContext(), nil
 }
 
 func (f *CmdFlags) init() error {
@@ -69,12 +67,8 @@ func (f *CmdFlags) init() error {
 	return nil
 }
 
-func (f *CmdFlags) isVersionCommand() bool {
-	return f.List == 0 && f.ArchPath == "" && f.TargetPath != ""
-}
-
-func (f *CmdFlags) isListCommand() bool {
-	return f.List > 0 && f.ArchPath == "" && f.TargetPath != ""
+func (f *CmdFlags) isLogCommand() bool {
+	return f.ArchPath == ""
 }
 
 func (f *CmdFlags) isArchCommand() bool {
@@ -82,11 +76,11 @@ func (f *CmdFlags) isArchCommand() bool {
 }
 
 func (f *CmdFlags) isVerArchCommand() bool {
-	return f.List == 0 && f.ArchPath != "" && f.VerRange != "" && f.TargetPath != ""
+	return f.LogSize == 0 && f.ArchPath != "" && f.VerRange != ""
 }
 
 func (f *CmdFlags) isDateArchCommand() bool {
-	return f.List == 0 && f.ArchPath != "" && f.DateRange != "" && f.TargetPath != ""
+	return f.LogSize == 0 && f.ArchPath != "" && f.DateRange != ""
 }
 
 func (f *CmdFlags) getEnvPath() (evnPath string, isDefault bool) {
@@ -169,7 +163,7 @@ func (f *CmdFlags) parseDate() (start time.Time, target time.Time, err error) {
 func ParseFlags() (flags *CmdFlags, err error) {
 	// 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
 	envPath := flag.String("env", "", "Running Environment Path! ")
-	list := flag.Int("list", 0, "Version Info Count! ")
+	logSize := flag.Int("log", 0, "Version Info Count! ")
 	target := flag.String("target", "", "Target Path! ")
 	arch := flag.String("arch", "", "Arch File Path! ")
 	v := flag.String("v", "", "Version Setting! ")
@@ -177,7 +171,7 @@ func ParseFlags() (flags *CmdFlags, err error) {
 
 	flag.Parse()
 	rs := &CmdFlags{
-		EnvPath:    strings.TrimSpace(*envPath), List: *list,
+		EnvPath:    strings.TrimSpace(*envPath), LogSize: *logSize,
 		TargetPath: strings.TrimSpace(*target), ArchPath: strings.TrimSpace(*arch),
 		VerRange:   strings.TrimSpace(*v), DateRange: strings.TrimSpace(*d)}
 	err = rs.init()

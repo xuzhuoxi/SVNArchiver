@@ -14,20 +14,18 @@ const (
 	DiffItemDeleted  = "deleted"
 )
 
-type DiffRoot struct {
+type DiffResult struct {
 	Name  xml.Name  `xml:"diff"`
-	Entry InfoEntry `xml:"entry"`
+	Paths DiffPaths `xml:"paths"`
 }
 
-type DiffPaths struct {
-	Paths []DiffPath `xml:"path"`
-}
+type DiffPaths []*DiffPath
 
 type DiffPath struct {
 	Item  string `xml:"item,attr"`
 	Props string `xml:"props,attr"`
 	Kind  string `xml:"kind,attr"`
-	Path  string `xml:"path"`
+	Value string `xml:"path"`
 }
 
 func (p *DiffPath) IsAdded() bool {
@@ -43,12 +41,12 @@ func (p *DiffPath) IsDeleted() bool {
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
-func QueryDiffSumPrevious(path string, targetRevision int) (l *DiffRoot, err error) {
+func QueryDiffSumPrevious(path string, targetRevision int) (l *DiffResult, err error) {
 	log, err := QueryLog(path)
 	if nil != err {
 		return nil, err
 	}
-	prev, err := log.GetCommittedRevisionPrevious(targetRevision)
+	prev, err := log.GetPrevCommittedRevision(targetRevision)
 	if nil != err {
 		return nil, err
 	}
@@ -57,14 +55,14 @@ func QueryDiffSumPrevious(path string, targetRevision int) (l *DiffRoot, err err
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
-func QueryDiffSumRevision(path string, targetRevision int, baseRevision int) (l *DiffRoot, err error) {
+func QueryDiffSumRevision(path string, targetRevision int, baseRevision int) (l *DiffResult, err error) {
 	vStr := fmt.Sprintf("-r%d:%d", baseRevision, targetRevision)
-	cmd := exec.Command(CommandName, SubDiff, vStr, ArgXml, ArgSummarize, path)
+	cmd := exec.Command(MainCmd, SubCmdDiff, vStr, ArgXml, ArgSummarize, path)
 	out, err := cmd.CombinedOutput()
 	if nil != err {
 		return nil, err
 	}
-	rs := DiffRoot{}
+	rs := DiffResult{}
 	err = xml.Unmarshal(out, &rs)
 	if nil != err {
 		return nil, err

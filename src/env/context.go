@@ -10,9 +10,9 @@ type VersionContext struct {
 	TargetPath string
 }
 
-type ListContext struct {
+type LogContext struct {
 	TargetPath string
-	MaxCount   int
+	LogSize    int
 }
 
 type ArchContext struct {
