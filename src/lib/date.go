@@ -2,26 +2,44 @@
 // @author xuzhuoxi
 package lib
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
 
 const (
-	DatetimeLayout = "20060102T150405"
+	layout0 = "20060102T150405"
+	layout1 = "20060102T1504"
+	layout2 = "20060102T15"
+	layout3 = "20060102"
 )
 
 var (
-	DatetimeZero time.Time
+	layouts      = []string{layout0, layout1, layout2, layout3}
+	datetimeZero time.Time
 )
 
 func init() {
-	datetime, err := ParseDatetime("19710101T000000")
+	datetime, err := ParseDatetimeByLayout("19710101T000000", layout0)
 	if nil != err {
 		panic(err)
 	}
-	DatetimeZero = datetime
+	datetimeZero = datetime
 }
 
 func ParseDatetime(str string) (date time.Time, err error) {
-	return time.ParseInLocation(DatetimeLayout, str, time.Local)
+	for index := range layouts {
+		rs, e := ParseDatetimeByLayout(str, layouts[index])
+		if nil == e {
+			return rs, nil
+		}
+	}
+	return datetimeZero, errors.New(fmt.Sprintf(`parsing time "%s" fail!`, str))
+}
+
+func ParseDatetimeByLayout(str string, layout string) (date time.Time, err error) {
+	return time.ParseInLocation(layout, str, time.Local)
 }
 
 func ParseDatetimeByRFC3339Nano(str string) (date time.Time, err error) {

@@ -3,15 +3,16 @@
 package core
 
 import (
+	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
-	"fmt"
 )
 
 func HandleVersion(ctx *env.VersionContext) {
 	if nil == ctx {
 		return
 	}
+	fmt.Println(`Handle "svnversion" Command:`)
 	rs, err := svnversion.QueryVersion(ctx.TargetPath)
 	if nil != err {
 		fmt.Println("QueryVersion Error:", err)

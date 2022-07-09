@@ -3,12 +3,17 @@
 package core
 
 import (
-	"github.com/xuzhuoxi/SVNArchiver/src/env"
-	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"fmt"
+	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/model"
+	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 )
 
 func HandleLog(ctx *env.LogContext) {
+	if nil == ctx {
+		return
+	}
+	fmt.Println(`Handle "svn log" Command:`)
 	rs, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
 		fmt.Println("QueryList Error:", err)
@@ -25,7 +30,7 @@ func HandleLog(ctx *env.LogContext) {
 	}
 }
 
-func printLogEntry(e *svn.LogResultEntry) {
+func printLogEntry(e *model.LogResultEntry) {
 	reversion := e.Revision
 	actions := []byte("   ")
 	as := []byte(e.GetActions())

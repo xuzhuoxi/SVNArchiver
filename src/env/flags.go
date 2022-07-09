@@ -1,15 +1,12 @@
 package env
 
 import (
+	"errors"
 	"flag"
+	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/infra-go/filex"
 	"github.com/xuzhuoxi/infra-go/osxu"
-	"errors"
 	"strings"
-	"strconv"
-	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/lib"
-	"time"
 )
 
 type CmdFlags struct {
@@ -17,8 +14,14 @@ type CmdFlags struct {
 	LogSize    int
 	TargetPath string
 	ArchPath   string
-	VerRange   string
-	DateRange  string
+
+	Reversion int // 版本导出
+	RevDiffN  int // 版本差异前
+	RevDiffM  int // 版本差异后
+
+	Date      string // 版本时间导出
+	DateDiffN string // 版本时间差异前
+	DateDiffM string // 版本时间差异后
 
 	defaultEvn bool
 }
@@ -30,27 +33,55 @@ func (f *CmdFlags) GetLogContext() (ctx *LogContext) {
 	return &LogContext{TargetPath: f.TargetPath, LogSize: f.LogSize}
 }
 
-func (f *CmdFlags) GetArchContext() (ctx *ArchContext, err error) {
-	if !f.isVerArchCommand() {
+func (f *CmdFlags) GetRevDiffArchContext() (ctx *ArchRevDiffContext, err error) {
+	if !f.isRevDiffArchCommand() {
 		return nil, nil
 	}
-	s, t, e := f.parseVer()
-	if nil != e {
-		return nil, e
-	}
-	return &ArchContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartVer: s, TargetVer: t}, nil
+	return &ArchRevDiffContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath,
+		RevStart: f.RevDiffN, RevTarget: f.RevDiffM}, nil
 }
 
-func (f *CmdFlags) GetDateArchContext() (ctx *ArchContext, err error) {
+func (f *CmdFlags) GetRevArchContext() (ctx *ArchRevContext, err error) {
+	if !f.isRevArchCommand() {
+		return nil, nil
+	}
+	return &ArchRevContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath,
+		Reversion: f.Reversion}, nil
+}
+
+func (f *CmdFlags) GetDateDiffArchContext() (ctx *ArchDateDiffContext, err error) {
+	if !f.isDateDiffArchCommand() {
+		return nil, nil
+	}
+	ctx = &ArchDateDiffContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath}
+	if f.DateDiffN != "" {
+		start, e := lib.ParseDatetime(f.DateDiffN)
+		if nil != e {
+			return nil, e
+		}
+		ctx.DateStart, ctx.DateStartStr, ctx.ExistStart = start, f.DateDiffN, true
+	}
+	if f.DateDiffM != "" {
+		target, e := lib.ParseDatetime(f.DateDiffM)
+		if nil != e {
+			return nil, e
+		}
+		ctx.DateTarget, ctx.DateTargetStr, ctx.ExistTarget = target, f.DateDiffM, true
+	}
+	return
+}
+
+func (f *CmdFlags) GetDateArchContext() (ctx *ArchDateContext, err error) {
 	if !f.isDateArchCommand() {
 		return nil, nil
 	}
-	s, t, e := f.parseDate()
+	ctx = &ArchDateContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, DateStr: f.Date}
+	date, e := lib.ParseDatetime(f.Date)
 	if nil != e {
 		return nil, e
 	}
-	dCtx := &ArchDateContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, StartDate: s, TargetDate: t}
-	return dCtx.GetArchContext(), nil
+	ctx.Date = date
+	return
 }
 
 func (f *CmdFlags) init() error {
@@ -64,23 +95,51 @@ func (f *CmdFlags) init() error {
 	} else {
 		f.TargetPath = filex.Combine(f.TargetPath, targetPath)
 	}
+	if !filex.IsAbsFormat(f.ArchPath) {
+		f.ArchPath = filex.Combine(f.EnvPath, f.ArchPath)
+	}
 	return nil
 }
 
 func (f *CmdFlags) isLogCommand() bool {
-	return f.ArchPath == ""
+	return f.ArchPath == "" && !f.isArchCommand()
 }
 
 func (f *CmdFlags) isArchCommand() bool {
-	return f.isVerArchCommand() || f.isDateArchCommand()
+	return f.isRevArchCommand() || f.isRevDiffArchCommand() ||
+		f.isDateArchCommand() || f.isDateDiffArchCommand()
 }
 
-func (f *CmdFlags) isVerArchCommand() bool {
-	return f.LogSize == 0 && f.ArchPath != "" && f.VerRange != ""
+func (f *CmdFlags) isRevArchCommand() bool {
+	return f.LogSize == 0 && f.ArchPath != "" && f.hasRevParams()
+}
+
+func (f *CmdFlags) isRevDiffArchCommand() bool {
+	return f.LogSize == 0 && f.ArchPath != "" && f.hasRevDiffParams()
+}
+
+func (f *CmdFlags) hasRevParams() bool {
+	return f.Reversion > 0
+}
+
+func (f *CmdFlags) hasRevDiffParams() bool {
+	return f.RevDiffN > 0 || f.RevDiffM > 0
 }
 
 func (f *CmdFlags) isDateArchCommand() bool {
-	return f.LogSize == 0 && f.ArchPath != "" && f.DateRange != ""
+	return f.LogSize == 0 && f.ArchPath != "" && f.hasDateParams()
+}
+
+func (f *CmdFlags) isDateDiffArchCommand() bool {
+	return f.LogSize == 0 && f.ArchPath != "" && f.hasDateDiffParams()
+}
+
+func (f *CmdFlags) hasDateParams() bool {
+	return f.Date != ""
+}
+
+func (f *CmdFlags) hasDateDiffParams() bool {
+	return f.DateDiffN != "" || f.DateDiffM != ""
 }
 
 func (f *CmdFlags) getEnvPath() (evnPath string, isDefault bool) {
@@ -105,75 +164,26 @@ func (f *CmdFlags) getTargetPath() (targetPath string, exist bool) {
 	return f.TargetPath, false
 }
 
-func (f *CmdFlags) parseVer() (start int, target int, err error) {
-	if "" == f.VerRange {
-		err = errors.New(fmt.Sprintf("VerRange format error: [%s]", f.VerRange))
-		return
-	}
-	if strings.Contains(f.VerRange, SepVer) {
-		arr := strings.Split(f.VerRange, SepVer)
-		if len(arr) == 2 {
-			start, err = strconv.Atoi(arr[0])
-			if nil != err {
-				return
-			}
-			target, err = strconv.Atoi(arr[1])
-			if nil != err {
-				return
-			}
-			return
-		}
-		err = errors.New(fmt.Sprintf("VerRange format error: [%s]", f.VerRange))
-	}
-	target, err = strconv.Atoi(f.VerRange)
-	if nil != err {
-		return
-	}
-	return
-}
-
-func (f *CmdFlags) parseDate() (start time.Time, target time.Time, err error) {
-	if "" == f.DateRange {
-		err = errors.New(fmt.Sprintf("DateRange format error: [%s]", f.VerRange))
-		return
-	}
-	if strings.Contains(f.VerRange, SepVer) {
-		arr := strings.Split(f.VerRange, SepVer)
-		if len(arr) == 2 {
-			start, err = lib.ParseDatetime(arr[0])
-			if nil != err {
-				return
-			}
-			target, err = lib.ParseDatetime(arr[1])
-			if nil != err {
-				return
-			}
-			return
-		}
-		err = errors.New(fmt.Sprintf("VerRange format error: [%s]", f.VerRange))
-	}
-	target, err = lib.ParseDatetime(f.VerRange)
-	if nil != err {
-		return
-	}
-	start = lib.DatetimeZero
-	return
-}
-
 func ParseFlags() (flags *CmdFlags, err error) {
 	// 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
 	envPath := flag.String("env", "", "Running Environment Path! ")
-	logSize := flag.Int("log", 0, "Version Info Count! ")
+	logSize := flag.Int("log", 0, "Max Log entry size! ")
 	target := flag.String("target", "", "Target Path! ")
 	arch := flag.String("arch", "", "Arch File Path! ")
-	v := flag.String("v", "", "Version Setting! ")
-	d := flag.String("d", "", "Date Setting! ")
+
+	rev := flag.Int("r", 0, "Reversion Number! ")
+	revN := flag.Int("r0", 0, "Start Reversion Number! ")
+	revM := flag.Int("r1", 0, "Target Reversion Number! ")
+	date := flag.String("d", "", "Start Date! ")
+	dateN := flag.String("d0", "", "Start Date! ")
+	dateM := flag.String("d1", "", "Target Date! ")
 
 	flag.Parse()
 	rs := &CmdFlags{
-		EnvPath:    strings.TrimSpace(*envPath), LogSize: *logSize,
+		EnvPath: strings.TrimSpace(*envPath), LogSize: *logSize,
 		TargetPath: strings.TrimSpace(*target), ArchPath: strings.TrimSpace(*arch),
-		VerRange:   strings.TrimSpace(*v), DateRange: strings.TrimSpace(*d)}
+		Reversion: *rev, RevDiffN: *revN, RevDiffM: *revM,
+		Date: strings.TrimSpace(*date), DateDiffN: strings.TrimSpace(*dateN), DateDiffM: strings.TrimSpace(*dateM)}
 	err = rs.init()
 	if nil != err {
 		return

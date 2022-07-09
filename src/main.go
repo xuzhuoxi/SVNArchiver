@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
-	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/core"
+	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
 )
 
 func main() {
@@ -18,14 +18,37 @@ func main() {
 		core.HandleLog(ctx)
 	}
 
-	ctx, err := cmdFlags.GetArchContext()
+	//-----------------------
+	ctx0, err := cmdFlags.GetRevArchContext()
 	if nil != err {
 		fmt.Println(err)
 		return
 	}
-	if ctx != nil {
-		core.HandleArch(ctx)
+	core.HandleRevArch(ctx0)
+
+	//-----------------------
+	ctx1, err := cmdFlags.GetRevDiffArchContext()
+	if nil != err {
+		fmt.Println(err)
+		return
 	}
+	core.HandleRevDiffArch(ctx1)
+
+	//-----------------------
+	ctx2, err := cmdFlags.GetDateArchContext()
+	if nil != err {
+		fmt.Println(err)
+		return
+	}
+	core.HandleDateArch(ctx2)
+
+	//-----------------------
+	ctx3, err := cmdFlags.GetDateDiffArchContext()
+	if nil != err {
+		fmt.Println(err)
+		return
+	}
+	core.HandleDateDiffArch(ctx3)
 }
 
 func demo() {

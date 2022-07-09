@@ -3,69 +3,70 @@ package svn
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"os/exec"
 )
 
-// svn diff 命令主要针对文件
-
-const (
-	DiffItemAdded    = "added"
-	DiffItemModified = "modified"
-	DiffItemDeleted  = "deleted"
-)
-
-type DiffResult struct {
-	Name  xml.Name  `xml:"diff"`
-	Paths DiffPaths `xml:"paths"`
-}
-
-type DiffPaths []*DiffPath
-
-type DiffPath struct {
-	Item  string `xml:"item,attr"`
-	Props string `xml:"props,attr"`
-	Kind  string `xml:"kind,attr"`
-	Value string `xml:"path"`
-}
-
-func (p *DiffPath) IsAdded() bool {
-	return p.Item == DiffItemAdded
-}
-
-func (p *DiffPath) IsModified() bool {
-	return p.Item == DiffItemModified
-}
-
-func (p *DiffPath) IsDeleted() bool {
-	return p.Item == DiffItemDeleted
-}
-
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
-func QueryDiffSumPrevious(path string, targetRevision int) (l *DiffResult, err error) {
+func QueryDiffToLast(path string, rev int) (l *model.DiffResult, err error) {
 	log, err := QueryLog(path)
 	if nil != err {
 		return nil, err
 	}
-	prev, err := log.GetPrevCommittedRevision(targetRevision)
+	last, err := log.GetLastLogEntry()
 	if nil != err {
 		return nil, err
 	}
-
-	return QueryDiffSumRevision(path, targetRevision, prev)
+	if last.Revision == rev {
+		return nil, nil
+	}
+	return QueryDiffBetween(path, rev, last.Revision)
 }
 
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
-func QueryDiffSumRevision(path string, targetRevision int, baseRevision int) (l *DiffResult, err error) {
-	vStr := fmt.Sprintf("-r%d:%d", baseRevision, targetRevision)
+func QueryDiffToNext(path string, rev int) (l *model.DiffResult, err error) {
+	log, err := QueryLog(path)
+	if nil != err {
+		return nil, err
+	}
+	next, err := log.GetNextCommittedRevision(rev)
+	if nil != err {
+		return nil, err
+	}
+	if next == rev {
+		return nil, nil
+	}
+	return QueryDiffBetween(path, rev, next)
+}
+
+// https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
+func QueryDiffFromPrev(path string, rev int) (l *model.DiffResult, err error) {
+	log, err := QueryLog(path)
+	if nil != err {
+		return nil, err
+	}
+	prev, err := log.GetPrevCommittedRevision(rev)
+	if nil != err {
+		return nil, err
+	}
+	if prev == rev {
+		return nil, nil
+	}
+	return QueryDiffBetween(path, prev, rev)
+}
+
+// https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
+func QueryDiffBetween(path string, revN int, revM int) (l *model.DiffResult, err error) {
+	vStr := fmt.Sprintf("-r%d:%d", revN, revM)
 	cmd := exec.Command(MainCmd, SubCmdDiff, vStr, ArgXml, ArgSummarize, path)
 	out, err := cmd.CombinedOutput()
 	if nil != err {
 		return nil, err
 	}
-	rs := DiffResult{}
-	err = xml.Unmarshal(out, &rs)
+	rs := &model.DiffResult{}
+	err = xml.Unmarshal(out, rs)
 	if nil != err {
 		return nil, err
 	}
-	return &rs, nil
+	return rs, nil
 }

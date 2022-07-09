@@ -3,12 +3,16 @@
 package core
 
 import (
+	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
-	"fmt"
 )
 
 func HandleStatus(ctx *env.LogContext) {
+	if nil == ctx {
+		return
+	}
+	fmt.Println(`Handle "svn status" Command:`)
 	rs, err := svn.QueryStatus(ctx.TargetPath)
 	if nil != err {
 		fmt.Println("QueryStatus Error:", err)
@@ -20,7 +24,7 @@ func HandleStatus(ctx *env.LogContext) {
 		if author == "" {
 			author = "unknown"
 		}
-		date := committed.Date[:22]
+		date := committed.DateString()
 		fmt.Println(fmt.Sprintf("%d \t %s \t %s \t %s", committed.Revision, date, author, v.Path))
 	}
 }
