@@ -5,6 +5,7 @@ package core
 import (
 	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
@@ -94,7 +95,7 @@ func queryDiff(targetPath string, revN, revM int) (l *model.DiffResult, fixRevN,
 // 1. 取差异列表
 // 2. 遍历差异列表中目录，创建目录
 // 3. 遍历差异列表中文件，使用"svn export"命令导出
-func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM int, archDir string) {
+func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string) {
 	baseLen := len(targetPath)
 	tempDir := genNextTempDir()
 	for _, v := range diffResult.Paths.Paths {
@@ -118,13 +119,14 @@ func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM 
 		fmt.Println(fmt.Sprintf("Export: %s", filex.Combine("$Base", relativePath)))
 		svn.Export(v.XmlValue, revM, archPath)
 	}
+	lib.Archive(tempDir, archPath, true)
 }
 
 // 效率高
 // 这个方法的逻辑如下
 // 1. 导出目标版本号的全部
 // 2. 根据差异列表移动文件
-func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archDir string) {
+func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string) {
 	baseLen := len(targetPath)
 	tempDir1 := getNextTempDir()
 	svn.Export(targetPath, revM, tempDir1)
@@ -138,4 +140,5 @@ func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM
 		fmt.Println(fmt.Sprintf("Export: %s", filex.Combine("$Base", relativePath)))
 		filex.MoveAuto(filex.Combine(tempDir1, relativePath), filex.Combine(tempDir2, relativePath), os.ModePerm)
 	}
+	lib.Archive(tempDir2, archPath, true)
 }

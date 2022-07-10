@@ -5,6 +5,7 @@ package core
 import (
 	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
@@ -54,6 +55,7 @@ func queryReversion(targetPath string, date time.Time) (logResult *model.LogResu
 func archReversion(targetPath string, reversion int, archPath string) {
 	tempDir := getNextTempDir()
 	svn.Export(targetPath, reversion, tempDir)
+	lib.Archive(tempDir, archPath, true)
 }
 
 func clearExportDir(dir string) {
