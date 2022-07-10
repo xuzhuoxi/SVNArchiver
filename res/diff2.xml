@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diff>
+	<paths>
+		<path item="added" props="none" kind="file">game\IMG_1683.JPG</path>
+		<path item="added" props="none" kind="file">game\helloworld.txt</path>
+		<path item="added" props="none" kind="file">game\临时记录.md</path>
+		<path item="added" props="none" kind="file">game\烛武.txt</path>
+		<path item="added" props="none" kind="dir">game</path>
+		<path item="added" props="none" kind="file">helloworld.txt</path>
+		<path item="added" props="none" kind="file">v2-915c5176b0e6619c6ba12e14caa281c4_720w.jpg</path>
+		<path item="added" props="none" kind="file">v2-9dcc53d5ce08ac3ddb25c40a133ca7f3_1440w.jpg</path>
+		<path item="added" props="none" kind="file">临时记录.md</path>
+		<path item="added" props="none" kind="file">烛武.txt</path>
+	</paths>
+</diff>

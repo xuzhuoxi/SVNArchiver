@@ -16,6 +16,7 @@
 
 *.log
 /.idea/
-/build/debian
-/build/release
-
+/export/
+/build/
+!/build/goxc_build.bat
+!/build/goxc_build.sh

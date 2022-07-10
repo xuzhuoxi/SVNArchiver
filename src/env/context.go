@@ -3,6 +3,7 @@
 package env
 
 import (
+	"strconv"
 	"time"
 )
 
@@ -19,6 +20,10 @@ type ArchRevContext struct {
 	TargetPath string
 	ArchPath   string
 	Reversion  int
+}
+
+func (o *ArchRevContext) GetArchPath() string {
+	return o.ArchPath
 }
 
 type ArchRevDiffContext struct {
@@ -40,6 +45,24 @@ func (c *ArchRevDiffContext) ExitRange() bool {
 	return c.RevTarget != 0 && c.RevStart != 0
 }
 
+func (c *ArchRevDiffContext) RevStartString() string {
+	if 0 == c.RevStart {
+		return ""
+	}
+	return strconv.Itoa(c.RevStart)
+}
+
+func (c *ArchRevDiffContext) RevTargetString() string {
+	if 0 == c.RevTarget {
+		return ""
+	}
+	return strconv.Itoa(c.RevTarget)
+}
+
+func (o *ArchRevDiffContext) GetArchPath() string {
+	return o.ArchPath
+}
+
 type ArchDateContext struct {
 	TargetPath string
 	ArchPath   string
@@ -49,6 +72,10 @@ type ArchDateContext struct {
 
 func (o *ArchDateContext) DateString() string {
 	return ToPrintDate(o.DateStr)
+}
+
+func (o *ArchDateContext) GetArchPath() string {
+	return o.ArchPath
 }
 
 type ArchDateDiffContext struct {
@@ -70,4 +97,8 @@ func (o *ArchDateDiffContext) DateStartString() string {
 
 func (o *ArchDateDiffContext) DateTargetString() string {
 	return ToPrintDate(o.DateTargetStr)
+}
+
+func (o *ArchDateDiffContext) GetArchPath() string {
+	return o.ArchPath
 }

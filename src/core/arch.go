@@ -5,38 +5,56 @@ package core
 import (
 	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
+	"time"
 )
 
 func HandleDateArch(ctx *env.ArchDateContext) {
 	if nil == ctx {
 		return
 	}
-	clearExportDir(ctx.ArchPath)
-	rsQuery, err := svn.QueryLog(ctx.TargetPath)
+
+	_, reversion, err := queryReversion(ctx.TargetPath, ctx.Date)
 	if nil != err {
-		fmt.Println("HandleDateArch on QueryLog Error:", err)
 		return
 	}
-	reversion, err := rsQuery.GetDateRevision(ctx.Date)
-	if nil != err {
-		fmt.Println("HandleDateArch on GetDateRevision Error:", err)
-		return
-	}
+
+	clearExportDir(ctx.GetArchPath())
+
 	fmt.Println(fmt.Sprintf(`Handle "arch date[%s] reversion[%d]" Command:`, ctx.DateString(), reversion))
-	svn.Export(ctx.TargetPath, reversion, ctx.ArchPath)
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, reversion, ctx.TargetPath))
+	archReversion(ctx.GetArchPath(), reversion, ctx.ArchPath)
+	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, reversion, ctx.GetArchPath()))
 }
 
 func HandleRevArch(ctx *env.ArchRevContext) {
 	if nil == ctx {
 		return
 	}
+	clearExportDir(ctx.GetArchPath())
+
 	fmt.Println(fmt.Sprintf(`Handle "arch reversion[%d]" Command:`, ctx.Reversion))
-	clearExportDir(ctx.ArchPath)
-	svn.Export(ctx.TargetPath, ctx.Reversion, ctx.ArchPath)
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, ctx.TargetPath))
+	archReversion(ctx.GetArchPath(), ctx.Reversion, ctx.ArchPath)
+	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, ctx.GetArchPath()))
+}
+
+func queryReversion(targetPath string, date time.Time) (logResult *model.LogResult, reversion int, err error) {
+	logResult, err = svn.QueryLog(targetPath)
+	if nil != err {
+		fmt.Println("Query Log Error:", err)
+		return nil, 0, err
+	}
+	reversion, err = logResult.GetDateRevision(date)
+	if nil != err {
+		fmt.Println("GetDateRevision Error:", err)
+		return nil, 0, err
+	}
+	return logResult, reversion, nil
+}
+
+func archReversion(targetPath string, reversion int, archPath string) {
+	svn.Export(targetPath, reversion, archPath)
 }
 
 func clearExportDir(dir string) {

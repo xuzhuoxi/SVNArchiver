@@ -223,6 +223,6 @@ type LogResultPath struct {
 }
 
 func (o LogResultPath) String() string {
-	return fmt.Sprintf("{Action=%s, Prop=%v, Text=%v, Kind=%s, Value=%s}",
+	return fmt.Sprintf("{Action=%s, Prop=%v, Text=%v, Kind=%s, XmlValue=%s}",
 		o.Action, o.PropMods, o.TextMods, o.Kind, o.XmlValue)
 }
