@@ -20,3 +20,4 @@
 /build/
 !/build/goxc_build.bat
 !/build/goxc_build.sh
+/.temp_export/

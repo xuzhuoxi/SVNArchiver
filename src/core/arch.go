@@ -21,10 +21,9 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
-	clearExportDir(ctx.GetArchPath())
-
-	fmt.Println(fmt.Sprintf(`Handle "arch date[%s] reversion[%d]" Command:`, ctx.DateString(), reversion))
-	archReversion(ctx.GetArchPath(), reversion, ctx.ArchPath)
+	fmt.Println(fmt.Sprintf(`Handle "arch date[%s]reversion[%d][%s]" Command:`,
+		ctx.DateString(), reversion, ctx.TargetPath))
+	archReversion(ctx.TargetPath, reversion, ctx.GetArchPath())
 	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, reversion, ctx.GetArchPath()))
 }
 
@@ -32,10 +31,9 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 	if nil == ctx {
 		return
 	}
-	clearExportDir(ctx.GetArchPath())
-
-	fmt.Println(fmt.Sprintf(`Handle "arch reversion[%d]" Command:`, ctx.Reversion))
-	archReversion(ctx.GetArchPath(), ctx.Reversion, ctx.ArchPath)
+	fmt.Println(fmt.Sprintf(`Handle "arch reversion[%d][%s]" Command:`,
+		ctx.Reversion, ctx.TargetPath))
+	archReversion(ctx.TargetPath, ctx.Reversion, ctx.GetArchPath())
 	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, ctx.GetArchPath()))
 }
 
@@ -54,7 +52,8 @@ func queryReversion(targetPath string, date time.Time) (logResult *model.LogResu
 }
 
 func archReversion(targetPath string, reversion int, archPath string) {
-	svn.Export(targetPath, reversion, archPath)
+	tempDir := getNextTempDir()
+	svn.Export(targetPath, reversion, tempDir)
 }
 
 func clearExportDir(dir string) {

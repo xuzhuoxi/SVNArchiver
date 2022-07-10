@@ -14,6 +14,8 @@ func main() {
 		return
 	}
 
+	core.ClearTempDir()
+
 	if ctx := cmdFlags.GetLogContext(); nil != ctx {
 		core.HandleLog(ctx)
 	}
@@ -49,6 +51,8 @@ func main() {
 		return
 	}
 	core.HandleDateDiffArch(ctx3)
+
+	//core.ClearTempDir()
 }
 
 func demo() {
