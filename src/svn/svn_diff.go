@@ -36,11 +36,11 @@ func QueryDiffToNext(path string, rev int) (l *model.DiffResult, revN, revM int,
 	if nil != err {
 		return nil, 0, 0, err
 	}
-	if next == rev {
+	if next.Reversion == rev {
 		return nil, 0, 0, nil
 	}
-	l, err = QueryDiffBetween(path, rev, next)
-	revN, revM = rev, next
+	l, err = QueryDiffBetween(path, rev, next.Reversion)
+	revN, revM = rev, next.Reversion
 	return
 }
 
@@ -54,11 +54,11 @@ func QueryDiffFromPrev(path string, rev int) (l *model.DiffResult, revN, revM in
 	if nil != err {
 		return nil, 0, 0, err
 	}
-	if prev == rev {
+	if prev.Reversion == rev {
 		return nil, 0, 0, nil
 	}
-	l, err = QueryDiffBetween(path, prev, rev)
-	revN, revM = prev, rev
+	l, err = QueryDiffBetween(path, prev.Reversion, rev)
+	revN, revM = prev.Reversion, rev
 	return
 }
 

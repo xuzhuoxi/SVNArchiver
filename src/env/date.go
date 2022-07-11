@@ -1,6 +1,6 @@
 // Create on 2022/7/8
 // @author xuzhuoxi
-package lib
+package env
 
 import (
 	"errors"
@@ -9,19 +9,23 @@ import (
 )
 
 const (
-	layout0 = "20060102T150405"
-	layout1 = "20060102T1504"
-	layout2 = "20060102T15"
-	layout3 = "20060102"
+	layoutInput0 = "20060102T150405"
+	layoutInput1 = "20060102T1504"
+	layoutInput2 = "20060102T15"
+	layoutInput3 = "20060102"
+)
+
+const (
+	LayoutOutput = "200601021504"
 )
 
 var (
-	layouts      = []string{layout0, layout1, layout2, layout3}
+	layouts      = []string{layoutInput0, layoutInput1, layoutInput2, layoutInput3}
 	datetimeZero time.Time
 )
 
 func init() {
-	datetime, err := ParseDatetimeByLayout("19710101T000000", layout0)
+	datetime, err := ParseDatetimeByLayout("19710101T000000", layoutInput0)
 	if nil != err {
 		panic(err)
 	}

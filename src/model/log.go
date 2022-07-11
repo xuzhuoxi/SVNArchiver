@@ -6,7 +6,8 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/lib"
+	"github.com/xuzhuoxi/SVNArchiver/src/env"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,116 +21,124 @@ func (r *LogResult) LogSize() int {
 	return len(r.LogEntries)
 }
 
+func (r *LogResult) GetReversionList() []int {
+	rs := make([]int, len(r.LogEntries))
+	for index := range r.LogEntries {
+		rs[index] = r.LogEntries[index].Revision
+	}
+	return rs
+}
+
 func (r *LogResult) String() string {
-	return fmt.Sprintf("{Name:%v, Size=%d}", r.Name, r.LogSize())
+	return fmt.Sprintf("{Name:%v, Size=%d, Rev=%v}", r.Name, r.LogSize(), r.GetReversionList())
 }
 
 // 返回变动版本号
-func (r *LogResult) GetDateRevision(date time.Time) (nearRevision int, err error) {
+func (r *LogResult) GetDateRevision(date time.Time) (nearRevision LogRev, err error) {
 	ln := len(r.LogEntries)
 	if ln == 0 {
-		return 0, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
+		return LogRev{}, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
 	}
 
 	if date.Before(r.LogEntries[0].GetDate()) {
-		return 0, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
+		return LogRev{}, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
 	}
 	size := r.LogSize()
 	lastDate := r.LogEntries[size-1].GetDate()
 	if date.Equal(lastDate) || date.After(lastDate) {
-		return r.LogEntries[size-1].Revision, nil
+		return r.LogEntries[size-1].GetSimpleRev(), nil
 	}
 	for index := 0; index < size; index += 1 {
 		entryDate := r.LogEntries[index].GetDate()
 		if date.Equal(entryDate) {
-			return r.LogEntries[index].Revision, nil
+			return r.LogEntries[index].GetSimpleRev(), nil
 		}
 		if date.Before(entryDate) {
 			if index-1 >= 0 {
-				return r.LogEntries[index-1].Revision, nil
+				return r.LogEntries[index-1].GetSimpleRev(), nil
 			}
 			break
 		}
 	}
-	return 0, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
+	return LogRev{}, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
 }
 
 // 返回变动版本号
-func (r *LogResult) GetCommittedRevision(revision int) (committedRevision int, err error) {
+func (r *LogResult) GetCommittedRevision(revision int) (committedRevision LogRev, err error) {
 	ln := len(r.LogEntries)
 	if ln == 0 {
-		return 0, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
 	}
 	if revision < r.LogEntries[0].Revision {
-		return 0, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
 	}
 	size := r.LogSize()
 	if revision >= r.LogEntries[size-1].Revision {
-		return r.LogEntries[size-1].Revision, nil
+		return r.LogEntries[size-1].GetSimpleRev(), nil
 	}
 	for index := 0; index < size; index += 1 {
 		if revision == r.LogEntries[index].Revision {
-			return r.LogEntries[index].Revision, nil
+			return r.LogEntries[index].GetSimpleRev(), nil
 		}
 		if revision < r.LogEntries[index].Revision {
 			if index-1 >= 0 {
-				return r.LogEntries[index-1].Revision, nil
+				return r.LogEntries[index-1].GetSimpleRev(), nil
 			}
 			break
 		}
 	}
-	return 0, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
+	return LogRev{}, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
 }
 
 // 返回上一个版本号
-func (r *LogResult) GetPrevCommittedRevision(revision int) (prevRevision int, err error) {
+func (r *LogResult) GetPrevCommittedRevision(revision int) (prevRevision LogRev, err error) {
 	ln := len(r.LogEntries)
 	if ln == 0 {
-		return 0, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
 	}
 	if revision < r.LogEntries[0].Revision {
-		return 0, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
 	}
 	size := r.LogSize()
 	if revision > r.LogEntries[size-1].Revision {
-		return r.LogEntries[size-1].Revision, nil
+		return r.LogEntries[size-1].GetSimpleRev(), nil
 	}
 	for index := 0; index < size; index += 1 {
 		if revision <= r.LogEntries[index].Revision {
 			if index-1 >= 0 {
-				return r.LogEntries[index-1].Revision, nil
+				return r.LogEntries[index-1].GetSimpleRev(), nil
 			}
 			break
 		}
 	}
-	return 0, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
+	return LogRev{}, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
 }
 
 // 返回下一个版本号
-func (r *LogResult) GetNextCommittedRevision(revision int) (nextRevision int, err error) {
+func (r *LogResult) GetNextCommittedRevision(revision int) (nextRevision LogRev, err error) {
 	ln := len(r.LogEntries)
 	if ln == 0 {
-		return 0, errors.New(fmt.Sprintf("Next Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Next Revision(%d) Not Found!", revision))
 	}
 	if revision < r.LogEntries[0].Revision {
-		return r.LogEntries[0].Revision, nil
+		return r.LogEntries[0].GetSimpleRev(), nil
 	}
 	size := r.LogSize()
 	if revision >= r.LogEntries[size-1].Revision {
-		return 0, errors.New(fmt.Sprintf("Next Revision(%d) Not Found!", revision))
+		return LogRev{}, errors.New(fmt.Sprintf("Next Revision(%d) Not Found!", revision))
 	}
 	for index := 0; index < size; index += 1 {
 		if revision == r.LogEntries[index].Revision {
 			if index+1 < len(r.LogEntries) {
-				return r.LogEntries[index+1].Revision, nil
+				return r.LogEntries[index+1].GetSimpleRev(), nil
 			}
 			break
 		}
 		if revision < r.LogEntries[index].Revision {
-			return r.LogEntries[index].Revision, nil
+			return r.LogEntries[index].GetSimpleRev(), nil
 		}
 	}
-	return 0, errors.New(fmt.Sprintf("Previous Revision(%d) Not Found!", revision))
+	return LogRev{}, errors.New(fmt.Sprintf("Previous Revision(%d) Not Found!", revision))
 }
 
 func (r *LogResult) GetCommittedLogEntry(revision int) (e *LogResultEntry, err error) {
@@ -137,7 +146,7 @@ func (r *LogResult) GetCommittedLogEntry(revision int) (e *LogResultEntry, err e
 	if nil != err {
 		return
 	}
-	return r.GetLogEntry(committedRevision)
+	return r.GetLogEntry(committedRevision.Reversion)
 }
 
 func (r *LogResult) GetLogEntry(committedRevision int) (e *LogResultEntry, err error) {
@@ -197,9 +206,21 @@ func (l *LogResultEntry) GetDate() time.Time {
 	if nil != l.date {
 		return *l.date
 	}
-	d, _ := lib.ParseDatetimeByRFC3339Nano(l.Date)
+	d, _ := env.ParseDatetimeByRFC3339Nano(l.Date)
 	l.date = &d
 	return d
+}
+
+func (l *LogResultEntry) GetReversionString() string {
+	return strconv.Itoa(l.Revision)
+}
+
+func (l *LogResultEntry) GetDateString() string {
+	return l.GetDate().Format(env.LayoutOutput)
+}
+
+func (l *LogResultEntry) GetSimpleRev() LogRev {
+	return LogRev{Reversion: l.Revision, Date: l.GetDate(), DateStr: l.Date}
 }
 
 func (l LogResultEntry) String() string {
@@ -225,4 +246,22 @@ type LogResultPath struct {
 func (o LogResultPath) String() string {
 	return fmt.Sprintf("{Action=%s, Prop=%v, Text=%v, Kind=%s, XmlValue=%s}",
 		o.Action, o.PropMods, o.TextMods, o.Kind, o.XmlValue)
+}
+
+type LogRev struct {
+	Reversion int
+	DateStr   string
+	Date      time.Time
+}
+
+func (o LogRev) GetReversionString() string {
+	return strconv.Itoa(o.Reversion)
+}
+
+func (o LogRev) GetDateString() string {
+	return o.Date.Format(env.LayoutOutput)
+}
+
+func (o LogRev) String() string {
+	return fmt.Sprintf(`{Rev=%d, Date=%s}`, o.Reversion, o.GetDateString())
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
 	"os"
+	"strconv"
 )
 
 func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
@@ -17,23 +18,22 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 		return
 	}
 
-	_, revN, revM, err := getRev(ctx)
+	logResult, logRevN, logRevM, err := getRev(ctx)
 	if nil != err {
 		fmt.Println(fmt.Sprintf(`Handle "arch date diff" query reversion error:[%s]`, err))
 		return
 	}
 
-	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, revN, revM)
+	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, logRevN.Reversion, logRevM.Reversion)
 	if err != nil {
 		fmt.Println(fmt.Sprintf(`Handle "arch date diff[%s:%s]" Command:`, ctx.DateStartString(), ctx.DateTargetString()))
 		return
 	}
 
-	clearExportDir(ctx.GetArchPath())
-
 	fmt.Println(fmt.Sprintf(`Handle "arch date diff[%s:%s]" Command:`, ctx.DateStartString(), ctx.DateTargetString()))
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, ctx.GetArchPath())
-	fmt.Println(fmt.Sprintf(`Export date diff[%s:%s] to:[%s]`, ctx.DateStartString(), ctx.DateTargetString(), ctx.GetArchPath()))
+	archPath := getArchDiffPathD(ctx.GetArchPath(), logResult, fixRevN, fixRevM)
+	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath)
+	fmt.Println(fmt.Sprintf(`Export date diff[%s:%s] to:[%s]`, ctx.DateStartString(), ctx.DateTargetString(), archPath))
 }
 
 func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
@@ -47,14 +47,13 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 		return
 	}
 
-	clearExportDir(ctx.GetArchPath())
-
 	fmt.Println(fmt.Sprintf(`Handle "arch reversion diff[%s:%s]" Command:`, ctx.RevStartString(), ctx.RevTargetString()))
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, ctx.GetArchPath())
-	fmt.Println(fmt.Sprintf(`Export reversion diff[%s:%s] to:[%s]`, ctx.RevStartString(), ctx.RevTargetString(), ctx.GetArchPath()))
+	archPath := getArchDiffPathR(ctx.GetArchPath(), fixRevN, fixRevM)
+	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath)
+	fmt.Println(fmt.Sprintf(`Export reversion diff[%s:%s] to:[%s]`, ctx.RevStartString(), ctx.RevTargetString(), archPath))
 }
 
-func getRev(ctx *env.ArchDateDiffContext) (logResult *model.LogResult, revN, revM int, err error) {
+func getRev(ctx *env.ArchDateDiffContext) (logResult *model.LogResult, revN, revM model.LogRev, err error) {
 	logResult, err = svn.QueryLog(ctx.TargetPath)
 	if nil != err {
 		return
@@ -63,14 +62,14 @@ func getRev(ctx *env.ArchDateDiffContext) (logResult *model.LogResult, revN, rev
 	if ctx.ExistStart {
 		rev, err := logResult.GetDateRevision(ctx.DateStart)
 		if nil != err {
-			return logResult, 0, 0, err
+			return logResult, model.LogRev{}, model.LogRev{}, err
 		}
 		revN = rev
 	}
 	if ctx.ExistTarget {
 		rev, err := logResult.GetDateRevision(ctx.DateTarget)
 		if nil != err {
-			return logResult, 0, 0, err
+			return logResult, model.LogRev{}, model.LogRev{}, err
 		}
 		revM = rev
 	}
@@ -88,6 +87,22 @@ func queryDiff(targetPath string, revN, revM int) (l *model.DiffResult, fixRevN,
 	l, err = svn.QueryDiffBetween(targetPath, revN, revM)
 	fixRevN, fixRevM = revN, revM
 	return
+}
+
+func getArchDiffPathR(archPath string, fixRevN, fixRevM int) string {
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR0, strconv.Itoa(fixRevN))
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR1, strconv.Itoa(fixRevM))
+	return archPath
+}
+
+func getArchDiffPathD(archPath string, logResult *model.LogResult, fixRevN, fixRevM int) string {
+	fixLogRevN, _ := logResult.GetLogEntry(fixRevN)
+	fixLogRevM, _ := logResult.GetLogEntry(fixRevM)
+	archPath = env.ReplaceWildcards(archPath, env.WildcardD0, fixLogRevN.GetDateString())
+	archPath = env.ReplaceWildcards(archPath, env.WildcardD1, fixLogRevM.GetDateString())
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR0, fixLogRevN.GetReversionString())
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR1, fixLogRevM.GetReversionString())
+	return archPath
 }
 
 // 效率低

@@ -9,6 +9,7 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
+	"strconv"
 	"time"
 )
 
@@ -17,39 +18,63 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
-	_, reversion, err := queryReversion(ctx.TargetPath, ctx.Date)
+	logResult, logRev, err := queryReversion(ctx.TargetPath, ctx.Date)
 	if nil != err {
 		return
 	}
 
 	fmt.Println(fmt.Sprintf(`Handle "arch date[%s]reversion[%d][%s]" Command:`,
-		ctx.DateString(), reversion, ctx.TargetPath))
-	archReversion(ctx.TargetPath, reversion, ctx.GetArchPath())
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, reversion, ctx.GetArchPath()))
+		ctx.DateString(), logRev.Reversion, ctx.TargetPath))
+	archPath := getArchPathD(ctx.GetArchPath(), logResult, logRev.Reversion)
+	archReversion(ctx.TargetPath, logRev.Reversion, archPath)
+	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, logRev.Reversion, archPath))
 }
 
 func HandleRevArch(ctx *env.ArchRevContext) {
 	if nil == ctx {
 		return
 	}
+
+	logResult, err := svn.QueryLog(ctx.TargetPath)
+	if nil != err {
+		return
+	}
+	logRev, err := logResult.GetCommittedRevision(ctx.Reversion)
+	if nil != err {
+		return
+	}
+
 	fmt.Println(fmt.Sprintf(`Handle "arch reversion[%d][%s]" Command:`,
 		ctx.Reversion, ctx.TargetPath))
-	archReversion(ctx.TargetPath, ctx.Reversion, ctx.GetArchPath())
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, ctx.GetArchPath()))
+	archPath := getArchPathR(ctx.GetArchPath(), logRev.Reversion)
+	archReversion(ctx.TargetPath, logRev.Reversion, archPath)
+	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, archPath))
 }
 
-func queryReversion(targetPath string, date time.Time) (logResult *model.LogResult, reversion int, err error) {
+func queryReversion(targetPath string, date time.Time) (logResult *model.LogResult, logRev model.LogRev, err error) {
 	logResult, err = svn.QueryLog(targetPath)
 	if nil != err {
 		fmt.Println("Query Log Error:", err)
-		return nil, 0, err
+		return nil, model.LogRev{}, err
 	}
-	reversion, err = logResult.GetDateRevision(date)
+	logRev, err = logResult.GetDateRevision(date)
 	if nil != err {
 		fmt.Println("GetDateRevision Error:", err)
-		return nil, 0, err
+		return nil, model.LogRev{}, err
 	}
-	return logResult, reversion, nil
+	return logResult, logRev, nil
+}
+
+func getArchPathR(archPath string, fixRev int) string {
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR, strconv.Itoa(fixRev))
+	return archPath
+}
+
+func getArchPathD(archPath string, logResult *model.LogResult, fixRev int) string {
+	fixLogRev, _ := logResult.GetLogEntry(fixRev)
+	archPath = env.ReplaceWildcards(archPath, env.WildcardD, fixLogRev.GetDateString())
+	archPath = env.ReplaceWildcards(archPath, env.WildcardR, fixLogRev.GetReversionString())
+	return archPath
 }
 
 func archReversion(targetPath string, reversion int, archPath string) {
