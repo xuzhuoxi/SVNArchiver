@@ -3,13 +3,9 @@
 package lib
 
 import (
-	"archive/tar"
-	"bufio"
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/infra-go/filex"
-	"io"
-	"io/fs"
 	"os"
 )
 
@@ -36,61 +32,7 @@ func Archive(filePath string, archPath string, override bool) error {
 		return errors.New(fmt.Sprintf("Create arch[%s] fail! ", archPath))
 	}
 	defer f.Close()
-	tarWriter := tar.NewWriter(f)
-	defer tarWriter.Close()
-	//gzipWriter := gzip.NewWriter(tarWriter)
-	//defer gzipWriter.Close()
 
-	if filex.IsDir(filePath) {
-		filePathLen := len(filePath)
-		filex.WaldAllFiles(filePath, func(path string, info fs.FileInfo, err error) error {
-			if nil != err {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			tarHeardName := path[filePathLen+1:]
-			logErr := writeFileToTar(path, tarHeardName, tarWriter)
-			if nil != logErr {
-				fmt.Println(logErr)
-			}
-			return nil
-		})
-	} else {
-		_, filename := filex.Split(filePath)
-		logErr := writeFileToTar(filePath, filename, tarWriter)
-		if nil != logErr {
-			fmt.Println(logErr)
-		}
-	}
-	return nil
-
-}
-
-func writeFileToTar(filePath string, tarHeaderName string, tarWriter *tar.Writer) error {
-	fileInfo, err := os.Stat(filePath)
-	if nil != err {
-		return err
-	}
-	srcFile, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-	reader := bufio.NewReader(srcFile)
-
-	hdr, err := tar.FileInfoHeader(fileInfo, "")
-	if err != nil {
-		return err
-	}
-	//hdr.Name = UTF8ToHZGB2312(tarHeaderName)
-	hdr.Name = tarHeaderName
-	hdr.Format = tar.FormatGNU
-	tarWriter.WriteHeader(hdr)
-	_, err = io.Copy(tarWriter, reader)
-	if err != nil {
-		return err
-	}
+	ArchiveZip(f, filePath)
 	return nil
 }
