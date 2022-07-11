@@ -22,10 +22,6 @@ type ArchRevContext struct {
 	Reversion  int
 }
 
-func (o *ArchRevContext) GetArchPath() string {
-	return o.ArchPath
-}
-
 type ArchRevDiffContext struct {
 	TargetPath string
 	ArchPath   string
@@ -59,10 +55,6 @@ func (c *ArchRevDiffContext) RevTargetString() string {
 	return strconv.Itoa(c.RevTarget)
 }
 
-func (o *ArchRevDiffContext) GetArchPath() string {
-	return o.ArchPath
-}
-
 type ArchDateContext struct {
 	TargetPath string
 	ArchPath   string
@@ -70,12 +62,8 @@ type ArchDateContext struct {
 	DateStr    string
 }
 
-func (o *ArchDateContext) DateString() string {
-	return ToPrintDate(o.DateStr)
-}
-
-func (o *ArchDateContext) GetArchPath() string {
-	return o.ArchPath
+func (c *ArchDateContext) DateString() string {
+	return ToPrintDate(c.DateStr)
 }
 
 type ArchDateDiffContext struct {
@@ -91,14 +79,10 @@ type ArchDateDiffContext struct {
 	ExistTarget   bool
 }
 
-func (o *ArchDateDiffContext) DateStartString() string {
-	return ToPrintDate(o.DateStartStr)
+func (c *ArchDateDiffContext) DateStartString() string {
+	return ToPrintDate(c.DateStartStr)
 }
 
-func (o *ArchDateDiffContext) DateTargetString() string {
-	return ToPrintDate(o.DateTargetStr)
-}
-
-func (o *ArchDateDiffContext) GetArchPath() string {
-	return o.ArchPath
+func (c *ArchDateDiffContext) DateTargetString() string {
+	return ToPrintDate(c.DateTargetStr)
 }

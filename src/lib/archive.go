@@ -23,6 +23,14 @@ func Archive(filePath string, archPath string, override bool) error {
 		}
 		filex.Remove(archPath)
 	}
+	dir, err := filex.GetUpDir(archPath)
+	if nil != err {
+		return errors.New(fmt.Sprintf("Parse archPath[%s] fail! ", archPath))
+	}
+	err = os.MkdirAll(dir, os.ModePerm)
+	if nil != err {
+		return errors.New(fmt.Sprintf("Mkdir archPath[%s] Parent folder fail! ", archPath))
+	}
 	f, err := os.Create(archPath)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Create arch[%s] fail! ", archPath))

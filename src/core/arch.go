@@ -32,7 +32,7 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: -d[%s] -r[%d] -target[%s]`, titleDataArch, ctx.DateString(), logRev.Reversion, ctx.TargetPath))
-	archPath := getArchPathD(ctx.GetArchPath(), logResult, logRev.Reversion)
+	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleDataArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleDataArch, archPath))
 }
@@ -55,7 +55,7 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
-	archPath := getArchPathR(ctx.GetArchPath(), logRev.Reversion)
+	archPath := getArchPathR(ctx.ArchPath, logRev.Reversion)
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleRevArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleRevArch, archPath))
 }
@@ -88,14 +88,14 @@ func archReversion(targetPath string, reversion int, archPath string, errTitle s
 	tempDir := getNextTempDir()
 	err := svn.Export(targetPath, reversion, tempDir)
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf(`%s \t["svn exprot"] [-r %d %s] Error[%s]`, errTitle, reversion, tempDir, err))
+		Logger.Warnln(fmt.Sprintf(`%s  ["svn exprot"] [-r %d %s] Error[%s]`, errTitle, reversion, tempDir, err))
 		return
 	}
-	Logger.Infoln(fmt.Sprintf(`%s \t["svn exprot"] [-r %d %s] succ.`, errTitle, reversion, tempDir))
+	Logger.Infoln(fmt.Sprintf(`%s  ["svn exprot"] [-r %d %s] succ.`, errTitle, reversion, tempDir))
 	err = lib.Archive(tempDir, archPath, true)
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf(`%s \t["tar"] [%s] Error[%s]`, errTitle, tempDir, err))
+		Logger.Warnln(fmt.Sprintf(`%s  ["tar"] [%s] Error[%s]`, errTitle, tempDir, err))
 		return
 	}
-	Logger.Infoln(fmt.Sprintf(`%s \t["tar"] [%s] succ.`, errTitle, tempDir))
+	Logger.Infoln(fmt.Sprintf(`%s  ["tar"] [%s] succ.`, errTitle, tempDir))
 }

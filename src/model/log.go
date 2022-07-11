@@ -206,7 +206,7 @@ func (l *LogResultEntry) GetDate() time.Time {
 	if nil != l.date {
 		return *l.date
 	}
-	d, _ := env.ParseDatetimeByRFC3339Nano(l.Date)
+	d, _ := env.ParseSVNDatetime(l.Date)
 	l.date = &d
 	return d
 }
@@ -216,7 +216,7 @@ func (l *LogResultEntry) GetReversionString() string {
 }
 
 func (l *LogResultEntry) GetDateString() string {
-	return l.GetDate().Format(env.LayoutOutput)
+	return l.GetDate().In(time.Local).Format(env.LocalOutputLayout)
 }
 
 func (l *LogResultEntry) GetSimpleRev() LogRev {
@@ -259,7 +259,7 @@ func (o LogRev) GetReversionString() string {
 }
 
 func (o LogRev) GetDateString() string {
-	return o.Date.Format(env.LayoutOutput)
+	return o.Date.In(time.Local).Format(env.LocalOutputLayout)
 }
 
 func (o LogRev) String() string {

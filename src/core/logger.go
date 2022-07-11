@@ -10,7 +10,7 @@ import (
 
 var (
 	Logger      logx.ILogger
-	LogFileName = "ImageSplitter"
+	LogFileName = "SVNArchiver"
 )
 
 func InitLogger() {

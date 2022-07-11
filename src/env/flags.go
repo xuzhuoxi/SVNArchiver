@@ -54,14 +54,14 @@ func (f *CmdFlags) GetDateDiffArchContext() (ctx *ArchDateDiffContext, err error
 	}
 	ctx = &ArchDateDiffContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath}
 	if f.DateDiffN != "" {
-		start, e := ParseDatetime(f.DateDiffN)
+		start, e := ParseInputDatetime(f.DateDiffN)
 		if nil != e {
 			return nil, e
 		}
 		ctx.DateStart, ctx.DateStartStr, ctx.ExistStart = start, f.DateDiffN, true
 	}
 	if f.DateDiffM != "" {
-		target, e := ParseDatetime(f.DateDiffM)
+		target, e := ParseInputDatetime(f.DateDiffM)
 		if nil != e {
 			return nil, e
 		}
@@ -75,7 +75,7 @@ func (f *CmdFlags) GetDateArchContext() (ctx *ArchDateContext, err error) {
 		return nil, nil
 	}
 	ctx = &ArchDateContext{TargetPath: f.TargetPath, ArchPath: f.ArchPath, DateStr: f.Date}
-	date, e := ParseDatetime(f.Date)
+	date, e := ParseInputDatetime(f.Date)
 	if nil != e {
 		return nil, e
 	}
