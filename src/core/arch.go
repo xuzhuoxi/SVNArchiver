@@ -3,14 +3,19 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
-	"github.com/xuzhuoxi/infra-go/filex"
 	"strconv"
 	"time"
+)
+
+var (
+	titleDataArch = `"HandleDateArch"`
+	titleRevArch  = `"HandleRevArch"`
 )
 
 func HandleDateArch(ctx *env.ArchDateContext) {
@@ -18,49 +23,51 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
+	Logger.Infoln(titleDataArch, ":")
+
 	logResult, logRev, err := queryReversion(ctx.TargetPath, ctx.Date)
 	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s ["queryReversion"] Error[%s]`, titleDataArch, err))
 		return
 	}
 
-	fmt.Println(fmt.Sprintf(`Handle "arch date[%s]reversion[%d][%s]" Command:`,
-		ctx.DateString(), logRev.Reversion, ctx.TargetPath))
+	Logger.Infoln(fmt.Sprintf(`%s Start: -d[%s] -r[%d] -target[%s]`, titleDataArch, ctx.DateString(), logRev.Reversion, ctx.TargetPath))
 	archPath := getArchPathD(ctx.GetArchPath(), logResult, logRev.Reversion)
-	archReversion(ctx.TargetPath, logRev.Reversion, archPath)
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, logRev.Reversion, archPath))
+	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleDataArch)
+	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleDataArch, archPath))
 }
 
 func HandleRevArch(ctx *env.ArchRevContext) {
 	if nil == ctx {
 		return
 	}
+	Logger.Infoln(titleRevArch, ":")
 
 	logResult, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s ["svn log"] Error[%s]`, titleRevArch, err))
 		return
 	}
 	logRev, err := logResult.GetCommittedRevision(ctx.Reversion)
 	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s ["logResult.GetCommittedRevision"] Error[%s]`, titleRevArch, err))
 		return
 	}
 
-	fmt.Println(fmt.Sprintf(`Handle "arch reversion[%d][%s]" Command:`,
-		ctx.Reversion, ctx.TargetPath))
+	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
 	archPath := getArchPathR(ctx.GetArchPath(), logRev.Reversion)
-	archReversion(ctx.TargetPath, logRev.Reversion, archPath)
-	fmt.Println(fmt.Sprintf(`Export reversion[%d] to:[%s]`, ctx.Reversion, archPath))
+	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleRevArch)
+	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleRevArch, archPath))
 }
 
 func queryReversion(targetPath string, date time.Time) (logResult *model.LogResult, logRev model.LogRev, err error) {
 	logResult, err = svn.QueryLog(targetPath)
 	if nil != err {
-		fmt.Println("Query Log Error:", err)
-		return nil, model.LogRev{}, err
+		return nil, model.LogRev{}, errors.New(fmt.Sprintf("QueryLog [%s]", err))
 	}
 	logRev, err = logResult.GetDateRevision(date)
 	if nil != err {
-		fmt.Println("GetDateRevision Error:", err)
-		return nil, model.LogRev{}, err
+		return nil, model.LogRev{}, errors.New(fmt.Sprintf("GetDateRevision [%s]", err))
 	}
 	return logResult, logRev, nil
 }
@@ -77,15 +84,18 @@ func getArchPathD(archPath string, logResult *model.LogResult, fixRev int) strin
 	return archPath
 }
 
-func archReversion(targetPath string, reversion int, archPath string) {
+func archReversion(targetPath string, reversion int, archPath string, errTitle string) {
 	tempDir := getNextTempDir()
-	svn.Export(targetPath, reversion, tempDir)
-	lib.Archive(tempDir, archPath, true)
-}
-
-func clearExportDir(dir string) {
-	if !filex.IsDir(dir) {
+	err := svn.Export(targetPath, reversion, tempDir)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s \t["svn exprot"] [-r %d %s] Error[%s]`, errTitle, reversion, tempDir, err))
 		return
 	}
-	filex.RemoveAll(dir)
+	Logger.Infoln(fmt.Sprintf(`%s \t["svn exprot"] [-r %d %s] succ.`, errTitle, reversion, tempDir))
+	err = lib.Archive(tempDir, archPath, true)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s \t["tar"] [%s] Error[%s]`, errTitle, tempDir, err))
+		return
+	}
+	Logger.Infoln(fmt.Sprintf(`%s \t["tar"] [%s] succ.`, errTitle, tempDir))
 }

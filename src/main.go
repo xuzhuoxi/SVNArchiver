@@ -4,66 +4,65 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/core"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
-	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
 )
 
 func main() {
+	core.InitLogger()
 	cmdFlags, err := env.ParseFlags()
 	if nil != err {
-		fmt.Println(err)
+		core.Logger.Errorln("ParseFlogs Error[%s]!", err)
 		return
 	}
 
 	core.ClearTempDir()
 
+	tryHandleLog(cmdFlags)
+	tryHandleRevArch(cmdFlags)
+	tryHandleDateArch(cmdFlags)
+	tryHandleRevDiffArch(cmdFlags)
+	tryHandleDateDiffArch(cmdFlags)
+
+	core.ClearTempDir()
+}
+
+func tryHandleLog(cmdFlags *env.CmdFlags) {
 	if ctx := cmdFlags.GetLogContext(); nil != ctx {
 		core.HandleLog(ctx)
 	}
-
-	//-----------------------
-	ctx0, err := cmdFlags.GetRevArchContext()
-	if nil != err {
-		fmt.Println(err)
-		return
-	}
-	core.HandleRevArch(ctx0)
-
-	//-----------------------
-	ctx1, err := cmdFlags.GetRevDiffArchContext()
-	if nil != err {
-		fmt.Println(err)
-		return
-	}
-	core.HandleRevDiffArch(ctx1)
-
-	//-----------------------
-	ctx2, err := cmdFlags.GetDateArchContext()
-	if nil != err {
-		fmt.Println(err)
-		return
-	}
-	core.HandleDateArch(ctx2)
-
-	//-----------------------
-	ctx3, err := cmdFlags.GetDateDiffArchContext()
-	if nil != err {
-		fmt.Println(err)
-		return
-	}
-	core.HandleDateDiffArch(ctx3)
-
-	//core.ClearTempDir()
 }
 
-func demo() {
-	path := `H:/SvnTest`
-
-	//log, err := svn.QueryLog(path)
-	log, err := svnversion.QueryVersion(path)
-
+func tryHandleRevArch(cmdFlags *env.CmdFlags) {
+	ctx, err := cmdFlags.GetRevArchContext()
 	if nil != err {
-		fmt.Println("错误：", err)
+		core.Logger.Warnln(fmt.Sprintf("RevArch Error[%s]!", err))
 		return
 	}
-	fmt.Println("成功：", log)
+	core.HandleRevArch(ctx)
+}
+
+func tryHandleDateArch(cmdFlags *env.CmdFlags) {
+	ctx, err := cmdFlags.GetDateArchContext()
+	if nil != err {
+		core.Logger.Warnln(fmt.Sprintf("DateArch Error[%s]!", err))
+		return
+	}
+	core.HandleDateArch(ctx)
+}
+
+func tryHandleRevDiffArch(cmdFlags *env.CmdFlags) {
+	ctx, err := cmdFlags.GetRevDiffArchContext()
+	if nil != err {
+		core.Logger.Warnln(fmt.Sprintf("RevDiffArch Error[%s]!", err))
+		return
+	}
+	core.HandleRevDiffArch(ctx)
+}
+
+func tryHandleDateDiffArch(cmdFlags *env.CmdFlags) {
+	ctx, err := cmdFlags.GetDateDiffArchContext()
+	if nil != err {
+		core.Logger.Warnln(fmt.Sprintf("DateDiffArch Error[%s]!", err))
+		return
+	}
+	core.HandleDateDiffArch(ctx)
 }

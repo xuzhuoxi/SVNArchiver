@@ -13,14 +13,15 @@ func HandleLog(ctx *env.LogContext) {
 	if nil == ctx {
 		return
 	}
-	fmt.Println(`Handle "svn log" Command:`)
+	Logger.Infoln(`HandleLog with command["svn log"]:`)
 	rs, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
-		fmt.Println("QueryList Error:", err)
+		Logger.Warnln(fmt.Sprintf(`HandleLog ["svnQueryLog"] Error[%s]`, err))
 		return
 	}
 	es := rs.LogEntries
 	size := ctx.LogSize
+	Logger.Infoln(fmt.Sprintf(`HandleLog Result[MaxSize=%d, PrintSize=%d]:`, len(es), size))
 	for index := len(es) - 1; index >= 0; index -= 1 {
 		printLogEntry(es[index])
 		size -= 1
@@ -38,5 +39,6 @@ func printLogEntry(e *model.LogResultEntry) {
 	author := e.Author
 	date := e.Date[:22]
 	msg := e.Msg
-	fmt.Println(fmt.Sprintf("%d \t %s \t %s \t %s \t %s", reversion, string(actions), author, date, msg))
+	printStr := fmt.Sprintf("\t %d \t %s \t %s \t %s \t %s", reversion, string(actions), author, date, msg)
+	Logger.Println(printStr)
 }

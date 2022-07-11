@@ -13,27 +13,35 @@ import (
 	"strconv"
 )
 
+var (
+	titleDataDiffArch = `"HandleDateDiffArch"`
+	titleRevDiffArch  = `"HandleRevDiffArch"`
+)
+
 func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 	if nil == ctx {
 		return
 	}
 
+	Logger.Infoln(titleDataDiffArch, ":")
+
 	logResult, logRevN, logRevM, err := getRev(ctx)
 	if nil != err {
-		fmt.Println(fmt.Sprintf(`Handle "arch date diff" query reversion error:[%s]`, err))
+		Logger.Warnln(fmt.Sprintf(`%s ["getEvn"] Error[%s]`, titleDataDiffArch, err))
 		return
 	}
 
 	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, logRevN.Reversion, logRevM.Reversion)
 	if err != nil {
-		fmt.Println(fmt.Sprintf(`Handle "arch date diff[%s:%s]" Command:`, ctx.DateStartString(), ctx.DateTargetString()))
+		Logger.Warnln(fmt.Sprintf(`%s ["queryDiff diff[%s:%s]"] Error[%s]`,
+			titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), err))
 		return
 	}
 
-	fmt.Println(fmt.Sprintf(`Handle "arch date diff[%s:%s]" Command:`, ctx.DateStartString(), ctx.DateTargetString()))
+	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), ctx.TargetPath))
 	archPath := getArchDiffPathD(ctx.GetArchPath(), logResult, fixRevN, fixRevM)
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath)
-	fmt.Println(fmt.Sprintf(`Export date diff[%s:%s] to:[%s]`, ctx.DateStartString(), ctx.DateTargetString(), archPath))
+	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleDataDiffArch)
+	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleDataDiffArch, fixRevN, fixRevM, archPath))
 }
 
 func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
@@ -43,14 +51,15 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 
 	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, ctx.RevStart, ctx.RevTarget)
 	if err != nil {
-		fmt.Println(fmt.Sprintf(`Handle "arch reversion diff[%s:%s]" Command:`, ctx.RevStartString(), ctx.RevTargetString()))
+		Logger.Warnln(fmt.Sprintf(`%s ["queryDiff diff[%s:%s]"] Error[%s]`,
+			titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), err))
 		return
 	}
 
-	fmt.Println(fmt.Sprintf(`Handle "arch reversion diff[%s:%s]" Command:`, ctx.RevStartString(), ctx.RevTargetString()))
+	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
 	archPath := getArchDiffPathR(ctx.GetArchPath(), fixRevN, fixRevM)
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath)
-	fmt.Println(fmt.Sprintf(`Export reversion diff[%s:%s] to:[%s]`, ctx.RevStartString(), ctx.RevTargetString(), archPath))
+	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch)
+	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleRevDiffArch, fixRevN, fixRevM, archPath))
 }
 
 func getRev(ctx *env.ArchDateDiffContext) (logResult *model.LogResult, revN, revM model.LogRev, err error) {
@@ -110,7 +119,7 @@ func getArchDiffPathD(archPath string, logResult *model.LogResult, fixRevN, fixR
 // 1. 取差异列表
 // 2. 遍历差异列表中目录，创建目录
 // 3. 遍历差异列表中文件，使用"svn export"命令导出
-func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string) {
+func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string, errTitle string) {
 	baseLen := len(targetPath)
 	tempDir := genNextTempDir()
 	for _, v := range diffResult.Paths.Paths {
@@ -124,36 +133,55 @@ func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM 
 		}
 		os.MkdirAll(archPath, os.ModePerm)
 	}
-	fmt.Println(fmt.Sprintf(`"$Base"=%s`, tempDir))
 	for _, v := range diffResult.Paths.Paths {
 		if v.IsDeleted() || v.IsDir() {
 			continue
 		}
 		relativePath := v.XmlValue[baseLen:]
 		archPath := filex.Combine(tempDir, relativePath)
-		fmt.Println(fmt.Sprintf("Export: %s", filex.Combine("$Base", relativePath)))
-		svn.Export(v.XmlValue, revM, archPath)
+		err := svn.Export(v.XmlValue, revM, archPath)
+		if nil != err {
+			Logger.Warnln(fmt.Sprintf(`%s \t["svn exprot"] [-r%d %s] Error[%s]`, errTitle, revM, archPath, err))
+			continue
+		}
+		Logger.Warnln(fmt.Sprintf(`%s \t["svn exprot"] [-r%d %s] succ.`, errTitle, revM, archPath))
 	}
-	lib.Archive(tempDir, archPath, true)
+	err := lib.Archive(tempDir, archPath, true)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s \t["tar"] [%s] Error[%s]`, errTitle, tempDir, err))
+		return
+	}
+	Logger.Infoln(fmt.Sprintf(`%s \t["tar"] [%s] succ.`, errTitle, tempDir))
 }
 
 // 效率高
 // 这个方法的逻辑如下
 // 1. 导出目标版本号的全部
 // 2. 根据差异列表移动文件
-func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string) {
+func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string, errTitle string) {
 	baseLen := len(targetPath)
 	tempDir1 := getNextTempDir()
-	svn.Export(targetPath, revM, tempDir1)
+	err := svn.Export(targetPath, revM, tempDir1)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s \t["svn exprot"] [-r%d %s] Error[%s]`, errTitle, revM, tempDir1, err))
+		return
+	}
+	Logger.Infoln(fmt.Sprintf(`%s \t["svn exprot"] [-r%d %s] succ.`, errTitle, revM, tempDir1))
 	tempDir2 := genNextTempDir()
-	fmt.Println(fmt.Sprintf(`"$Base"=%s`, tempDir2))
 	for _, v := range diffResult.Paths.Paths {
 		if v.IsDeleted() || v.IsDir() {
 			continue
 		}
 		relativePath := v.XmlValue[baseLen:]
-		fmt.Println(fmt.Sprintf("Export: %s", filex.Combine("$Base", relativePath)))
-		filex.MoveAuto(filex.Combine(tempDir1, relativePath), filex.Combine(tempDir2, relativePath), os.ModePerm)
+		srcPath := filex.Combine(tempDir1, relativePath)
+		dstPath := filex.Combine(tempDir2, relativePath)
+		filex.MoveAuto(srcPath, dstPath, os.ModePerm)
+		Logger.Infoln(fmt.Sprintf(`%s \t["copy"] [%s => %s]:[%s] `, errTitle, tempDir1, tempDir2, relativePath))
 	}
-	lib.Archive(tempDir2, archPath, true)
+	err = lib.Archive(tempDir2, archPath, true)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s \t["tar"] [%s] Error[%s]`, errTitle, tempDir2, err))
+		return
+	}
+	Logger.Infoln(fmt.Sprintf(`%s \t["tar"] [%s] succ.`, errTitle, tempDir2))
 }
