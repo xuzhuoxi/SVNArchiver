@@ -166,11 +166,11 @@ func (f *CmdFlags) getTargetPath() (targetPath string, exist bool) {
 func ParseFlags() (flags *CmdFlags, err error) {
 	// 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
 	envPath := flag.String("env", "", "Running Environment Path! ")
-	logSize := flag.Int("log", 0, "Max Log entry size! ")
 	target := flag.String("target", "", "Target Path! ")
 
-	arch := flag.String("arch", "", "Arch File Path! ")
+	logSize := flag.Int("log", 0, "Max Log entry size! ")
 
+	arch := flag.String("arch", "", "Arch File Path! ")
 	rev := flag.Int("r", 0, "Reversion Number! ")
 	revN := flag.Int("r0", 0, "Start Reversion Number! ")
 	revM := flag.Int("r1", 0, "Target Reversion Number! ")

@@ -9,7 +9,6 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
-	"strconv"
 	"time"
 )
 
@@ -55,7 +54,7 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
-	archPath := getArchPathR(ctx.ArchPath, logRev.Reversion)
+	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleRevArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleRevArch, archPath))
 }

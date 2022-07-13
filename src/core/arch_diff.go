@@ -49,6 +49,11 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 		return
 	}
 
+	logResult, err := svn.QueryLog(ctx.TargetPath)
+	if nil != err {
+		Logger.Warnln(fmt.Sprintf(`%s ["svn.QueryLog"] Error[%s]`, titleRevDiffArch, err))
+		return
+	}
 	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, ctx.RevStart, ctx.RevTarget)
 	if err != nil {
 		Logger.Warnln(fmt.Sprintf(`%s ["queryDiff diff[%s:%s]"] Error[%s]`,
@@ -57,7 +62,7 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
-	archPath := getArchDiffPathR(ctx.ArchPath, fixRevN, fixRevM)
+	archPath := getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
 	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleRevDiffArch, fixRevN, fixRevM, archPath))
 }
