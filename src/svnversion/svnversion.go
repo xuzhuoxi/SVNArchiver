@@ -3,10 +3,10 @@
 package svnversion
 
 import (
-	"os/exec"
-	"strings"
-	"strconv"
 	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -34,7 +34,7 @@ func (r VersionResult) String() string {
 	return fmt.Sprintf("{Min:%d, Max:%d}", r.Min, r.Max)
 }
 
-// https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.log.html
+// https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html
 // path可以为本地副本路径， 也可以是URL
 // path使用URL时支持支持多个路径
 // 版本号是整个svn仓库唯一共享的，所以这里返回的会出现断层情况

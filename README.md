@@ -34,21 +34,31 @@ go 1.16.15
 
 + 参考命令：
 
- + 查询提交信息功能：
-	 
-    + `SVNArchiver -log=50 -target=Svn目录`
+ + 查询提交信息功能： 
 
- + 完整归档功能：
+	+ [查询提交信息](#a3.2.1)
 
-    + `SVNArchiver -env=环境路径 -r=12 -target=与环境路径相关的相对Svn目录 -arch=归档文件路径_{d}_{r}.zip`
+      `SVNArchiver -log=50 -target=Svn目录`
 
-    + `SVNArchiver -d=20060102T150405 -target=Svn目录 -arch=归档文件路径_{d}_{r}.zip`
+ + 完整归档功能：  
 
- + 差异归档功能：
+    + [版本号完整归档](#a3.2.2)
 
-    + `SVNArchiver -env=环境路径 -r0=1 -r1=15 -target=与环境路径相关的相对Svn目录 -arch=归档文件路径_{d0}_{d1}_{r0}_{r1}.zip`
+      `SVNArchiver -env=环境路径 -r=12 -target=与环境路径相关的相对Svn目录 -arch=归档文件路径_{d}_{r}.zip`
 
-    + `SVNArchiver -d0=20220703 -d1=20220709T150405 -target=Svn目录 -arch=归档文件路径_{d0}_{d1}_{r0}_{r1}.zip`
+    + [时间点完整归档](#a3.2.3)
+
+      `SVNArchiver -d=20060102T150405 -target=Svn目录 -arch=归档文件路径_{d}_{r}.zip`
+
+ + 差异归档功能：  
+
+    + [版本号差异归档](#a3.2.4)
+
+      `SVNArchiver -env=环境路径 -r0=1 -r1=15 -target=与环境路径相关的相对Svn目录 -arch=归档文件路径_{d0}_{d1}_{r0}_{r1}.zip`
+
+    + [时间点差异归档](#a3.2.5)
+
+      `SVNArchiver -d0=20220703 -d1=20220709T150405 -target=Svn目录 -arch=归档文件路径_{d0}_{d1}_{r0}_{r1}.zip`
 
 ## <span id="a3">用户手册<span>
 
@@ -56,13 +66,13 @@ go 1.16.15
 
 + <span id="a3.1.1">-env<span>
 
-  环境路径, 用于指定一个基础路径，然后-target和-arch则可使用相对路径
+  环境路径, 用于指定一个基础路径，覆盖执行程序"SVNArchiver"的目录，然后-target和-arch则可使用相对路径。
   
-  若不指定，则使用执行文件所在目录作为环境路径
+  若不指定，则使用执行文件所在目录作为环境路径。
 
 + <span id="a3.1.2">-log<span>
 
-  查询条目显示的最大数量，要求>=0, 当值为0时，认定为无限制
+  查询条目显示的最大数量，要求>=0, 当值为0时，认定为无限制。
 
 + <span id="a3.1.3">-r<span>
 
@@ -114,7 +124,7 @@ go 1.16.15
 
   + -log: **非必要**
   
-    打印条目的数量限制。
+    打印条目的数量限制，没有则代表没限制。
 
 + <span id="a3.2.2">基于版本号的完整归档<span>
 
@@ -202,22 +212,17 @@ go 1.16.15
 
 ### <span id="a3.3">3.3 注意<span>
 
-1. 要求安装svn客户工具，并设置为环境路径。
++ 要求安装svn客户端工具，并设置为环境变量。
 
+## <span id="a4">参考文献<span>
 
-归档路径格式： path-version.zip path-version0-version1.zip
-
-
-## 功能说明
-
-- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.export.html
-- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
-- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.info.html
-- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.list.html
+- https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.log.html
+- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
+- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.export.html
+- https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.list.html
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.status.html
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.update.html
-
 
 ## 依赖性
 
@@ -233,4 +238,4 @@ xuzhuoxi
 
 ## 开源许可证
 
-~~ExcelExporter 源代码基于[MIT许可证](/LICENSE)进行开源。~~
+~~SVNArchiver 源代码基于[MIT许可证](/LICENSE)进行开源。~~
