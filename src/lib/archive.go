@@ -5,6 +5,7 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"github.com/xuzhuoxi/infra-go/archivex"
 	"github.com/xuzhuoxi/infra-go/filex"
 	"os"
 )
@@ -27,12 +28,11 @@ func Archive(filePath string, archPath string, override bool) error {
 	if nil != err {
 		return errors.New(fmt.Sprintf("Mkdir archPath[%s] Parent folder fail! ", archPath))
 	}
-	f, err := os.Create(archPath)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Create arch[%s] fail! ", archPath))
-	}
-	defer f.Close()
 
-	ArchiveZip(f, filePath)
+	err = archivex.ArchiveChildrenToZip(filePath, archPath)
+	if nil != err {
+		return err
+	}
+	//ArchiveZip(f, filePath)
 	return nil
 }

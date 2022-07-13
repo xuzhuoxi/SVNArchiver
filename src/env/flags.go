@@ -168,6 +168,7 @@ func ParseFlags() (flags *CmdFlags, err error) {
 	envPath := flag.String("env", "", "Running Environment Path! ")
 	logSize := flag.Int("log", 0, "Max Log entry size! ")
 	target := flag.String("target", "", "Target Path! ")
+
 	arch := flag.String("arch", "", "Arch File Path! ")
 
 	rev := flag.Int("r", 0, "Reversion Number! ")
