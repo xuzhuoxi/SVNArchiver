@@ -18,5 +18,5 @@ func (o *CommitEntry) DateString() string {
 }
 
 func (o CommitEntry) String() string {
-	return fmt.Sprintf("{Revision=%s, Author=%s, Date=%s}", o.Revision, o.Author, o.DateString())
+	return fmt.Sprintf("{Revision=%d, Author=%s, Date=%s}", o.Revision, o.Author, o.DateString())
 }
