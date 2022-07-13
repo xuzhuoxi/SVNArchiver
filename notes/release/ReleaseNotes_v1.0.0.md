@@ -1,4 +1,4 @@
-# ImageSplitter
+# SVNArchiver
 
 ## Release Notes
 
