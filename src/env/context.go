@@ -20,6 +20,7 @@ type ArchRevContext struct {
 	TargetPath string
 	ArchPath   string
 	Reversion  int
+	Override   bool
 }
 
 type ArchRevDiffContext struct {
@@ -27,6 +28,7 @@ type ArchRevDiffContext struct {
 	ArchPath   string
 	RevStart   int
 	RevTarget  int
+	Override   bool
 }
 
 func (c *ArchRevDiffContext) ExitStart() bool {
@@ -60,6 +62,7 @@ type ArchDateContext struct {
 	ArchPath   string
 	Date       time.Time
 	DateStr    string
+	Override   bool
 }
 
 func (c *ArchDateContext) DateString() string {
@@ -69,6 +72,7 @@ func (c *ArchDateContext) DateString() string {
 type ArchDateDiffContext struct {
 	TargetPath string
 	ArchPath   string
+	Override   bool
 
 	DateStart    time.Time
 	DateStartStr string

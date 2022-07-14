@@ -9,6 +9,7 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
+	"github.com/xuzhuoxi/infra-go/filex"
 	"strconv"
 	"time"
 )
@@ -31,8 +32,13 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
-	Logger.Infoln(fmt.Sprintf(`%s Start: -d[%s] -r[%d] -target[%s]`, titleDataArch, ctx.DateString(), logRev.Reversion, ctx.TargetPath))
 	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
+	if !ctx.Override && filex.IsFile(archPath) {
+		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleDataArch, archPath))
+		return
+	}
+
+	Logger.Infoln(fmt.Sprintf(`%s Start: -d[%s] -r[%d] -target[%s]`, titleDataArch, ctx.DateString(), logRev.Reversion, ctx.TargetPath))
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleDataArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleDataArch, archPath))
 }
@@ -54,8 +60,13 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 		return
 	}
 
-	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
 	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
+	if !ctx.Override && filex.IsFile(archPath) {
+		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleRevArch, archPath))
+		return
+	}
+
+	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleRevArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleRevArch, archPath))
 }

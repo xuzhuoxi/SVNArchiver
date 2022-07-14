@@ -38,8 +38,13 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 		return
 	}
 
-	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), ctx.TargetPath))
 	archPath := getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	if !ctx.Override && filex.IsFile(archPath) {
+		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleDataDiffArch, archPath))
+		return
+	}
+
+	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), ctx.TargetPath))
 	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleDataDiffArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleDataDiffArch, fixRevN, fixRevM, archPath))
 }
@@ -63,8 +68,13 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 		return
 	}
 
-	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
 	archPath := getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	if !ctx.Override && filex.IsFile(archPath) {
+		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleRevDiffArch, archPath))
+		return
+	}
+
+	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
 	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleRevDiffArch, fixRevN, fixRevM, archPath))
 }

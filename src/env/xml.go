@@ -5,11 +5,13 @@ package env
 import (
 	"github.com/xuzhuoxi/infra-go/filex"
 	"github.com/xuzhuoxi/infra-go/osxu"
+	"strings"
 )
 
 type ArchTask struct {
-	TargetPath string // 归档处理的svn目录，可以是svn仓库的非根目录。
-	ArchPath   string // 归档文件保存路径，支持通配符。
+	TargetPath   string // 归档处理的svn目录，可以是svn仓库的非根目录。
+	ArchPath     string // 归档文件保存路径，支持通配符。
+	ArchOverride bool   // 归档文件存在时是否覆盖。
 
 	Reversion int // 完整归档时使用, 用于指定具体版本号，并使用该版本号(或向前最近的版本号)进行归档。
 	RevDiffN  int // 差异归档时使用, 用于指定起始版本号。
@@ -24,7 +26,7 @@ func (t *ArchTask) GetRevDiffArchContext() (ctx *ArchRevDiffContext, err error) 
 	if !t.isRevDiffArchCommand() {
 		return nil, nil
 	}
-	return &ArchRevDiffContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath,
+	return &ArchRevDiffContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath, Override: t.ArchOverride,
 		RevStart: t.RevDiffN, RevTarget: t.RevDiffM}, nil
 }
 
@@ -32,7 +34,7 @@ func (t *ArchTask) GetRevArchContext() (ctx *ArchRevContext, err error) {
 	if !t.isRevArchCommand() {
 		return nil, nil
 	}
-	return &ArchRevContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath,
+	return &ArchRevContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath, Override: t.ArchOverride,
 		Reversion: t.Reversion}, nil
 }
 
@@ -40,7 +42,7 @@ func (t *ArchTask) GetDateDiffArchContext() (ctx *ArchDateDiffContext, err error
 	if !t.isDateDiffArchCommand() {
 		return nil, nil
 	}
-	ctx = &ArchDateDiffContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath}
+	ctx = &ArchDateDiffContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath, Override: t.ArchOverride}
 	if t.DateDiffN != "" {
 		start, e := ParseInputDatetime(t.DateDiffN)
 		if nil != e {
@@ -62,7 +64,7 @@ func (t *ArchTask) GetDateArchContext() (ctx *ArchDateContext, err error) {
 	if !t.isDateArchCommand() {
 		return nil, nil
 	}
-	ctx = &ArchDateContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath, DateStr: t.Date}
+	ctx = &ArchDateContext{TargetPath: t.TargetPath, ArchPath: t.ArchPath, Override: t.ArchOverride, DateStr: t.Date}
 	date, e := ParseInputDatetime(t.Date)
 	if nil != e {
 		return nil, e
@@ -103,10 +105,23 @@ func (t *ArchTask) hasDateDiffParams() bool {
 	return t.DateDiffN != "" || t.DateDiffM != ""
 }
 
+type ArchXmlArchNode struct {
+	Override string `xml:"override,attr"`
+	XmlValue string `xml:",innerxml"`
+}
+
+func (o *ArchXmlArchNode) IsOverride() bool {
+	return o.Override == "1" || strings.ToLower(o.Override) == "true"
+}
+
+func (o *ArchXmlArchNode) IsUnknown() bool {
+	return o.Override == ""
+}
+
 type ArchXmlTask struct {
-	Env    string `xml:"env"`
-	Target string `xml:"target"`
-	Arch   string `xml:"arch"`
+	Env    string           `xml:"env"`
+	Target string           `xml:"target"`
+	Arch   *ArchXmlArchNode `xml:"arch"`
 
 	R  int    `xml:"r,attr"`
 	R0 int    `xml:"r0,attr"`
@@ -117,7 +132,8 @@ type ArchXmlTask struct {
 }
 
 type ArchXmlTasks struct {
-	Tasks []*ArchXmlTask `xml:"task"`
+	ArchOverride bool           `xml:"arch-override,attr"`
+	Tasks        []*ArchXmlTask `xml:"task"`
 }
 
 type ArchXml struct {
@@ -152,10 +168,10 @@ func (o *ArchXml) initTasks() {
 		} else {
 			xmlTasks[index].Target = filex.Combine(xmlTasks[index].Env, task.Target)
 		}
-		if filex.IsExist(task.Arch) || filex.IsAbsFormat(task.Arch) {
-			xmlTasks[index].Arch = filex.FormatPath(task.Arch)
+		if filex.IsExist(task.Arch.XmlValue) || filex.IsAbsFormat(task.Arch.XmlValue) {
+			xmlTasks[index].Arch.XmlValue = filex.FormatPath(task.Arch.XmlValue)
 		} else {
-			xmlTasks[index].Arch = filex.Combine(xmlTasks[index].Env, task.Arch)
+			xmlTasks[index].Arch.XmlValue = filex.Combine(xmlTasks[index].Env, task.Arch.XmlValue)
 		}
 	}
 }
@@ -177,7 +193,11 @@ func (o *ArchXml) GetTasks() []ArchTask {
 	xmlTasks := o.Tasks.Tasks
 	rs := make([]ArchTask, len(xmlTasks))
 	for index, xmlTask := range xmlTasks {
-		task := ArchTask{TargetPath: xmlTask.Target, ArchPath: xmlTask.Arch,
+		override := o.Tasks.ArchOverride
+		if !xmlTask.Arch.IsUnknown() {
+			override = xmlTask.Arch.IsOverride()
+		}
+		task := ArchTask{TargetPath: xmlTask.Target, ArchPath: xmlTask.Arch.XmlValue, ArchOverride: override,
 			Reversion: xmlTask.R, RevDiffN: xmlTask.R0, RevDiffM: xmlTask.R1,
 			Date: xmlTask.D, DateDiffN: xmlTask.D0, DateDiffM: xmlTask.D1}
 		rs[index] = task

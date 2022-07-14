@@ -54,7 +54,7 @@ func (f *CmdFlags) GetArchTask() (ctx ArchTask, exist bool) {
 	if !f.isArchTaskCommand() {
 		return ArchTask{}, false
 	}
-	return ArchTask{TargetPath: f.TargetPath, ArchPath: f.ArchPath,
+	return ArchTask{TargetPath: f.TargetPath, ArchPath: f.ArchPath, ArchOverride: true,
 		Reversion: f.Reversion, RevDiffN: f.RevDiffN, RevDiffM: f.RevDiffM,
 		Date: f.Date, DateDiffN: f.DateDiffN, DateDiffM: f.DateDiffM}, true
 }
