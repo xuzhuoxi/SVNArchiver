@@ -246,13 +246,13 @@ go 1.16.15
 	    <!--主环境路径-->
 	    <main-env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export</main-env>
 	    <!--归档任务列表-->
-	    <tasks>
+	    <tasks arch-override="true">
 	        <!--归档任务样本-->
 	        <!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch
 	        <task r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
 	            <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
 	            <target>H:/SvnTest</target>
-	            <arch>task/arch_{r}.zip</arch>
+	            <arch override="false">task/arch_{r}.zip</arch>
 	        </task>
 	        -->
 	    </tasks>
@@ -262,6 +262,8 @@ go 1.16.15
  
     + <main-env>为主环境路径，**可选**，当没有配置时默认为执行文件所在目录。
 
+    + <tasks>中属性参数arch-override用于设置归档文件已经存在时是否进行覆盖，true为覆盖, false为忽略
+
     + r,d,r0,r1,d0,d1为属性参数，要求与[参数说明](#a3.1)中同名参数一致。
 
     + <env>为任务环境路径，**可选**，没有配置时使用<main-env>填充。
@@ -269,6 +271,8 @@ go 1.16.15
     + <target>为svn目录路径，如果使用相对路径，则以<env>节点运行时的值作为相对目录。
 
     + <arch>为归档文件路径，支持[通置符](#a3.1.12)。 如果使用相对路径，则以<env>节点运行时的值作为相对目录。
+
+    + <arch>中属性参数override, 用于设置当已经存在名称相同的归档文件时是否进行覆盖。 true:覆盖, flase:忽略，没有:使用arch-override属性。 
 
 ### <span id="a3.3">3.3 注意<span>
 
