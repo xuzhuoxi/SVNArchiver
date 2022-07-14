@@ -40,7 +40,7 @@ go 1.16.15
 
   + [Query submission information](#a3.2.1)
 
-      `SVNArchiver -log=50 -target=Svn directory`
+      `SVNArchiver -size=50 -target=Svn directory`
 
   + Full archive functionality:
 
@@ -62,6 +62,12 @@ go 1.16.15
 
       `SVNArchiver -d0=20220703 -d1=20220709T150405 -target=Svn directory -arch=archive_path_{d0}_{d1}_{r0}_{r1}.zip`
 
+  + File according to configuration xml:
+
+     + [Configuration file batch archive](#a3.2.6)
+
+       `SVNArchiver -xml=config xml file path`
+
 ## <span id="a3">User Manual<span>
 
 ### <span id="a3.1">3.1 Parameter description<span>
@@ -72,37 +78,49 @@ go 1.16.15
   
   If not specified, the directory where the executable file is located is used as the environment path.
 
-+ <span id="a3.1.2">-log<span>
++ <span id="a3.1.2">-xml<span>
+
+  Configuration file path for batch tasks.
+
++ <span id="a3.1.3">-size<span>
 
   The maximum number of query items displayed, requires >=0, when the value is 0, it is considered as unlimited.
 
-+ <span id="a3.1.3">-r<span>
++ <span id="a3.1.4">-target<span>
+
+  The svn directory for archive processing, which can be the **non-root directory** of the svn repository.
+
++ <span id="a3.1.5">-arch<span>
+
+   Archive file save path, supports [wildcard](#a3.1.12).
+
++ <span id="a3.1.6">-r<span>
 
   Used when archiving completely, to specify a specific version number, and use that version number (or the most recent version number onwards) for archiving.
 
-+ <span id="a3.1.4">-d<span>
++ <span id="a3.1.7">-d<span>
 
   Used when archiving completely, to specify a point in time and use the version number at that point in time (or the most recent version number onwards) for archiving.
 
-+ <span id="a3.1.5">-r0<span>
++ <span id="a3.1.8">-r0<span>
  
   Used in differential archiving to specify the starting version number.
 
-+ <span id="a3.1.6">-r1<span>
++ <span id="a3.1.9">-r1<span>
 
   Used when diffing archives, to specify the ending version number.
 
-+ <span id="a3.1.7">-d0<span>
++ <span id="a3.1.10">-d0<span>
 
   Used in differential archiving to specify the start time.
 
-+ <span id="a3.1.8">-d1<span>
++ <span id="a3.1.11">-d1<span>
 
   Used in differential archiving to specify the end time.
 
-+ **NOTE**:
++ <span id="a3.1.12">**NOTE**<span>:
 
-  1. The version number is specified **requires confirmation**, if the svn directory is **non-consecutive version number** and there is no specified version number, the **forward most recent** version number will be used instead.
+  1. The version number is specified **requires confirmation**, if the svn directory is **non-consecutive version number** and there is no specified version number, use the **forward most recent** version number instead.
 
   2. Time designation **not required to be determined**, the final use is the current time or the latest version number.
 
@@ -122,9 +140,9 @@ go 1.16.15
 
 + <span id="a3.2.1">Query and submit information function<span>
 
-  Example: `SVNArchiver -log=50 -target=Svn directory`
+  Example: `SVNArchiver -size=50 -target=Svn directory`
 
-  + -log: **not necessary**
+  + -size: **not necessary**
   
     There is a limit on the number of print entries, if none means there is no limit.
 
@@ -211,6 +229,46 @@ go 1.16.15
   + -arch:**required**
 
     Archive file save path. Relative paths are supported, as well as relative paths relative to -env. Path supports wildcards "{d0}", "{d1}", "{r0}", "{r1}".
+
++ <span id="a3.2.6">Profile-based bulk archiving<span>
+
+  Example: `SVNArchiver -xml=xml configuration file path`
+
+  + -xml:**required**
+   
+    Specify a configuration file path in xml format, and users can batch process the archiving function in the configuration file.
+
+  + XML format description:
+
+    ````
+	<?xml version="1.0" encoding="UTF-8"?>
+	<arch>
+		<!--Main environment path-->
+		<main-env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export</main-env>
+		<!--Archive task list-->
+		<tasks>
+			<!--Archive task sample-->
+			<!-- Attribute parameters: r,d,r0,r1,d0,d1, child nodes: env, target, arch
+			<task r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
+				<env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
+				<target>H:/SvnTest</target>
+				<arch>task/arch_{r}.zip</arch>
+			</task>
+			-->
+		</tasks>
+	</arch>
+
+    ````
+ 
+    + <main-env> main environment path, **optional**, when not configured, it defaults to the directory where the executable file is located.
+    
+    + r, d, r0, r1, d0, d1 are attribute parameters, which are required to be consistent with the parameters of the same name in [Parameter Description] (#a3.1).
+
+    + <env> is the task environment path, **optional**, if not configured, use <main-env> to fill in.
+
+    + <target> is the svn directory path. If a relative path is used, the value of <env> when the node is running is used as the relative directory.
+
+    + <arch> is the archive file path, supports [wild-place character](#a3.1.12). If a relative path is used, the value of <env> node runtime is used as the relative directory.
 
 ### <span id="a3.3">3.3 Note<span>
 

@@ -40,7 +40,7 @@ go 1.16.15
 
     + [查询提交信息](#a3.2.1)
 
-      `SVNArchiver -log=50 -target=Svn目录`
+      `SVNArchiver -size=50 -target=Svn目录`
 
   + 完整归档功能：  
 
@@ -62,6 +62,12 @@ go 1.16.15
 
       `SVNArchiver -d0=20220703 -d1=20220709T150405 -target=Svn目录 -arch=归档文件路径_{d0}_{d1}_{r0}_{r1}.zip`
 
+  + 根据配置xml进行归档： 
+
+    + [配置文件批量归档](#a3.2.6)
+
+      `SVNArchiver -xml=配置文件路径`
+
 ## <span id="a3">用户手册<span>
 
 ### <span id="a3.1">3.1 参数说明<span>
@@ -72,35 +78,47 @@ go 1.16.15
   
   若不指定，则使用执行文件所在目录作为环境路径。
 
-+ <span id="a3.1.2">-log<span>
++ <span id="a3.1.2">-xml<span>
+
+  批量任务的配置文件路径。
+
++ <span id="a3.1.3">-size<span>
 
   查询条目显示的最大数量，要求>=0, 当值为0时，认定为无限制。
 
-+ <span id="a3.1.3">-r<span>
++ <span id="a3.1.4">-target<span>
+
+  归档处理的svn目录，可以是svn仓库的**非根目录**。
+
++ <span id="a3.1.5">-arch<span>
+
+   归档文件保存路径，支持[通配符](#a3.1.12)。
+
++ <span id="a3.1.6">-r<span>
 
   完整归档时使用, 用于指定具体版本号，并使用该版本号(或向前最近的版本号)进行归档。
 
-+ <span id="a3.1.4">-d<span>
++ <span id="a3.1.7">-d<span>
 
   完整归档时使用, 用于指定一个时间点，并使用该时间点上的版本号(或向前最近的版本号)进行归档。
 
-+ <span id="a3.1.5">-r0<span>
++ <span id="a3.1.8">-r0<span>
  
   差异归档时使用, 用于指定起始版本号。
 
-+ <span id="a3.1.6">-r1<span>
++ <span id="a3.1.9">-r1<span>
 
   差异归档时使用, 用于指定结束版本号。
 
-+ <span id="a3.1.7">-d0<span>
++ <span id="a3.1.10">-d0<span>
 
   差异归档时使用, 用于指定起始时间。
 
-+ <span id="a3.1.8">-d1<span>
++ <span id="a3.1.11">-d1<span>
 
   差异归档时使用, 用于指定结束时间。
 
-+ **注意**： 
++ <span id="a3.1.12">**注意**<span>： 
 
   1. 版本号指定**要求确定**，如果svn目录上为**非连贯版本号**且没有指定的版本号，则使用**向前最近**的版本号代替。
 
@@ -122,9 +140,9 @@ go 1.16.15
 
 + <span id="a3.2.1">查询提交信息功能<span>
 	 
-  示例： `SVNArchiver -log=50 -target=Svn目录`
+  示例： `SVNArchiver -size=50 -target=Svn目录`
 
-  + -log: **非必要**
+  + -size: **非必要**
   
     打印条目的数量限制，没有则代表没限制。
 
@@ -211,6 +229,46 @@ go 1.16.15
   + -arch:**必要**
 
 	归档文件保存路径。 支持相对路径，也支持相对于-env的相对路径。 路径支持通配符"{d0}"、"{d1}"、"{r0}"、"{r1}"。
+
++ <span id="a3.2.6">基于配置文件的批量归档<span>
+
+  示例： `SVNArchiver -xml=xml配置文件路径`
+
+  + -xml:**必要**
+   
+	指定一个xml格式的配置文件路径，用户批量处理配置文件中的归档功能。
+
+  + XML格式说明：
+
+    ```
+	<?xml version="1.0" encoding="UTF-8"?>
+	<arch>
+	    <!--主环境路径-->
+	    <main-env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export</main-env>
+	    <!--归档任务列表-->
+	    <tasks>
+	        <!--归档任务样本-->
+	        <!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch
+	        <task r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
+	            <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
+	            <target>H:/SvnTest</target>
+	            <arch>task/arch_{r}.zip</arch>
+	        </task>
+	        -->
+	    </tasks>
+	</arch>
+	
+	``` 
+ 
+    + <main-env>为主环境路径，**可选**，当没有配置时默认为执行文件所在目录。
+
+    + r,d,r0,r1,d0,d1为属性参数，要求与[参数说明](#a3.1)中同名参数一致。
+
+    + <env>为任务环境路径，**可选**，没有配置时使用<main-env>填充。
+
+    + <target>为svn目录路径，如果使用相对路径，则以<env>节点运行时的值作为相对目录。
+
+    + <arch>为归档文件路径，支持[通置符](#a3.1.12)。 如果使用相对路径，则以<env>节点运行时的值作为相对目录。
 
 ### <span id="a3.3">3.3 注意<span>
 

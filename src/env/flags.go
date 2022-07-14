@@ -13,26 +13,24 @@ import (
 
 type CmdFlags struct {
 	EnvPath    string // 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
-	LogSize    int
-	TaskPath   string
-	TargetPath string
-	ArchPath   string
-
-	Reversion int // 版本导出
-	RevDiffN  int // 版本差异前
-	RevDiffM  int // 版本差异后
-
-	Date      string // 版本时间导出
-	DateDiffN string // 版本时间差异前
-	DateDiffM string // 版本时间差异后
+	XmlPath    string // 批量任务的配置文件路径。
+	LogSize    int    // 查询条目显示的最大数量，要求>=0, 当值为0时，认定为无限制。
+	TargetPath string // 归档处理的svn目录，可以是svn仓库的非根目录。
+	ArchPath   string // 归档文件保存路径，支持通配符。
+	Reversion  int    // 完整归档时使用, 用于指定具体版本号，并使用该版本号(或向前最近的版本号)进行归档。
+	RevDiffN   int    // 差异归档时使用, 用于指定起始版本号。
+	RevDiffM   int    // 差异归档时使用, 用于指定结束版本号。
+	Date       string // 完整归档时使用, 用于指定一个时间点，并使用该时间点上的版本号(或向前最近的版本号)进行归档。
+	DateDiffN  string // 差异归档时使用, 用于指定起始时间。
+	DateDiffM  string // 差异归档时使用, 用于指定结束时间。
 }
 
 func (f *CmdFlags) GetArchXml() (ctx *ArchXml, err error) {
 	if !f.isArchXmlCommand() {
 		return nil, nil
 	}
-	os.ReadFile(f.TaskPath)
-	bs, err := os.ReadFile(f.TaskPath)
+	os.ReadFile(f.XmlPath)
+	bs, err := os.ReadFile(f.XmlPath)
 	if nil != err {
 		return nil, errors.New(fmt.Sprintf("Load Arch XML Fail[%s].", err))
 	}
@@ -64,11 +62,11 @@ func (f *CmdFlags) GetArchTask() (ctx ArchTask, exist bool) {
 func (f *CmdFlags) init() error {
 	f.EnvPath = f.getEnvPath()
 	if f.isArchXmlCommand() {
-		taskPath, exist := f.getFixPath(f.TaskPath)
+		taskPath, exist := f.getFixPath(f.XmlPath)
 		if !exist {
-			return errors.New(fmt.Sprintf("Task Path[%s] is not exist! ", f.TaskPath))
+			return errors.New(fmt.Sprintf("Task Path[%s] is not exist! ", f.XmlPath))
 		}
-		f.TaskPath = taskPath
+		f.XmlPath = taskPath
 		return nil
 	}
 
@@ -87,7 +85,7 @@ func (f *CmdFlags) isLogCommand() bool {
 }
 
 func (f *CmdFlags) isArchXmlCommand() bool {
-	return f.TaskPath != "" && f.TargetPath == ""
+	return f.XmlPath != "" && f.TargetPath == ""
 }
 
 func (f *CmdFlags) isArchTaskCommand() bool {
@@ -121,24 +119,22 @@ func (f *CmdFlags) getFixPath(path string) (newPath string, exist bool) {
 }
 
 func ParseFlags() (flags *CmdFlags, err error) {
-	// 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
-	envPath := flag.String("env", "", "Running Environment Path! ")
-	target := flag.String("target", "", "Target Path! ")
+	envPath := flag.String("env", "", "Running Environment Path! ") // 【可选】运行时环境路径，支持绝对路径与相对于当前执行目录的相对路径，空表示使用执行文件所在目录
+	xml := flag.String("xml", "", "Task Config XML!")               // 批量任务的配置文件路径。
+	size := flag.Int("size", 0, "Max Log entry size! ")             // 查询条目显示的最大数量，要求>=0, 当值为0时，认定为无限制。
 
-	logSize := flag.Int("log", 0, "Max Log entry size! ")
-	task := flag.String("task", "", "Task Config XML!")
-
-	arch := flag.String("arch", "", "Arch File Path! ")
-	rev := flag.Int("r", 0, "Reversion Number! ")
-	revN := flag.Int("r0", 0, "Start Reversion Number! ")
-	revM := flag.Int("r1", 0, "Target Reversion Number! ")
-	date := flag.String("d", "", "Start Date! ")
-	dateN := flag.String("d0", "", "Start Date! ")
-	dateM := flag.String("d1", "", "Target Date! ")
+	target := flag.String("target", "", "Target Path! ")   // 归档处理的svn目录，可以是svn仓库的非根目录。
+	arch := flag.String("arch", "", "Arch File Path! ")    // 归档文件保存路径，支持通配符。
+	rev := flag.Int("r", 0, "Reversion Number! ")          // 完整归档时使用, 用于指定具体版本号，并使用该版本号(或向前最近的版本号)进行归档。
+	revN := flag.Int("r0", 0, "Start Reversion Number! ")  // 差异归档时使用, 用于指定起始版本号。
+	revM := flag.Int("r1", 0, "Target Reversion Number! ") // 差异归档时使用, 用于指定结束版本号。
+	date := flag.String("d", "", "Start Date! ")           // 完整归档时使用, 用于指定一个时间点，并使用该时间点上的版本号(或向前最近的版本号)进行归档。
+	dateN := flag.String("d0", "", "Start Date! ")         // 差异归档时使用, 用于指定起始时间。
+	dateM := flag.String("d1", "", "Target Date! ")        // 差异归档时使用, 用于指定结束时间。
 
 	flag.Parse()
 	rs := &CmdFlags{
-		EnvPath: strings.TrimSpace(*envPath), LogSize: *logSize, TaskPath: strings.TrimSpace(*task),
+		EnvPath: strings.TrimSpace(*envPath), LogSize: *size, XmlPath: strings.TrimSpace(*xml),
 		TargetPath: strings.TrimSpace(*target), ArchPath: strings.TrimSpace(*arch),
 		Reversion: *rev, RevDiffN: *revN, RevDiffM: *revM,
 		Date: strings.TrimSpace(*date), DateDiffN: strings.TrimSpace(*dateN), DateDiffM: strings.TrimSpace(*dateM)}

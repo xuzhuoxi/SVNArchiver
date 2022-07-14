@@ -8,16 +8,16 @@ import (
 )
 
 type ArchTask struct {
-	TargetPath string
-	ArchPath   string
+	TargetPath string // 归档处理的svn目录，可以是svn仓库的非根目录。
+	ArchPath   string // 归档文件保存路径，支持通配符。
 
-	Reversion int // 版本导出
-	RevDiffN  int // 版本差异前
-	RevDiffM  int // 版本差异后
+	Reversion int // 完整归档时使用, 用于指定具体版本号，并使用该版本号(或向前最近的版本号)进行归档。
+	RevDiffN  int // 差异归档时使用, 用于指定起始版本号。
+	RevDiffM  int // 差异归档时使用, 用于指定结束版本号。
 
-	Date      string // 版本时间导出
-	DateDiffN string // 版本时间差异前
-	DateDiffM string // 版本时间差异后
+	Date      string // 完整归档时使用, 用于指定一个时间点，并使用该时间点上的版本号(或向前最近的版本号)进行归档。
+	DateDiffN string // 差异归档时使用, 用于指定起始时间。
+	DateDiffM string // 差异归档时使用, 用于指定结束时间。
 }
 
 func (t *ArchTask) GetRevDiffArchContext() (ctx *ArchRevDiffContext, err error) {
@@ -121,8 +121,8 @@ type ArchXmlTasks struct {
 }
 
 type ArchXml struct {
-	Env   string        `xml:"env"`
-	Tasks *ArchXmlTasks `xml:"tasks"`
+	MainEnv string        `xml:"main-env"`
+	Tasks   *ArchXmlTasks `xml:"tasks"`
 }
 
 func (o *ArchXml) Init() {
@@ -132,15 +132,15 @@ func (o *ArchXml) Init() {
 
 func (o *ArchXml) initMainEnv() {
 	runningRoot := osxu.GetRunningDir()
-	if o.Env == "" {
-		o.Env = runningRoot
+	if o.MainEnv == "" {
+		o.MainEnv = runningRoot
 		return
 	}
-	if filex.IsDir(o.Env) {
-		o.Env = filex.FormatPath(o.Env)
+	if filex.IsDir(o.MainEnv) {
+		o.MainEnv = filex.FormatPath(o.MainEnv)
 		return
 	}
-	o.Env = filex.Combine(runningRoot, o.Env)
+	o.MainEnv = filex.Combine(runningRoot, o.MainEnv)
 }
 
 func (o *ArchXml) initTasks() {
@@ -162,13 +162,13 @@ func (o *ArchXml) initTasks() {
 
 func (o *ArchXml) getTaskEnv(task *ArchXmlTask) string {
 	if task.Env == "" {
-		return o.Env
+		return o.MainEnv
 	}
 	if filex.IsDir(task.Env) {
 		return filex.FormatPath(task.Env)
 	}
 	if filex.IsRelativeFormat(task.Env) {
-		return filex.Combine(o.Env, task.Env)
+		return filex.Combine(o.MainEnv, task.Env)
 	}
 	return filex.FormatPath(task.Env)
 }
