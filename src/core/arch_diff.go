@@ -23,7 +23,7 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 		return
 	}
 
-	Logger.Infoln(titleDataDiffArch, ":")
+	Logger.Infoln(titleDataDiffArch, ":------------------------------------------------------------------------------------")
 
 	logResult, logRevN, logRevM, err := getRev(ctx)
 	if nil != err {
@@ -48,6 +48,8 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 	if nil == ctx {
 		return
 	}
+
+	Logger.Infoln(titleRevDiffArch, ":------------------------------------------------------------------------------------")
 
 	logResult, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {

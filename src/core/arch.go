@@ -23,7 +23,7 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
-	Logger.Infoln(titleDataArch, ":")
+	Logger.Infoln(titleDataArch, ":------------------------------------------------------------------------------------")
 
 	logResult, logRev, err := queryReversion(ctx.TargetPath, ctx.Date)
 	if nil != err {
@@ -41,7 +41,7 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 	if nil == ctx {
 		return
 	}
-	Logger.Infoln(titleRevArch, ":")
+	Logger.Infoln(titleRevArch, ":------------------------------------------------------------------------------------")
 
 	logResult, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
@@ -88,10 +88,10 @@ func archReversion(targetPath string, reversion int, archPath string, errTitle s
 	tempDir := getNextTempDir()
 	err := svn.Export(targetPath, reversion, tempDir)
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf(`%s  ["svn exprot"] [-r %d %s] Error[%s]`, errTitle, reversion, tempDir, err))
+		Logger.Warnln(fmt.Sprintf(`%s  ["svn exprot"] [-r%d %s] Error[%s]`, errTitle, reversion, tempDir, err))
 		return
 	}
-	Logger.Infoln(fmt.Sprintf(`%s  ["svn exprot"] [-r %d %s] succ.`, errTitle, reversion, tempDir))
+	Logger.Infoln(fmt.Sprintf(`%s  ["svn exprot"] [-r%d %s] succ.`, errTitle, reversion, tempDir))
 	err = lib.Archive(tempDir, archPath, true)
 	if nil != err {
 		Logger.Warnln(fmt.Sprintf(`%s  ["tar"] [%s] Error[%s]`, errTitle, tempDir, err))

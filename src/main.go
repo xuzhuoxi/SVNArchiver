@@ -17,10 +17,8 @@ func main() {
 	core.ClearTempDir()
 
 	tryHandleLog(cmdFlags)
-	tryHandleRevArch(cmdFlags)
-	tryHandleDateArch(cmdFlags)
-	tryHandleRevDiffArch(cmdFlags)
-	tryHandleDateDiffArch(cmdFlags)
+	tryHandleArchXml(cmdFlags)
+	tryHandleArchContext(cmdFlags)
 
 	core.ClearTempDir()
 }
@@ -31,8 +29,40 @@ func tryHandleLog(cmdFlags *env.CmdFlags) {
 	}
 }
 
-func tryHandleRevArch(cmdFlags *env.CmdFlags) {
-	ctx, err := cmdFlags.GetRevArchContext()
+func tryHandleArchXml(cmdFlags *env.CmdFlags) {
+	archXml, err := cmdFlags.GetArchXml()
+	if nil != err {
+		core.Logger.Warnln(fmt.Sprintf("Handle Arch Xml Error[%s]!", err))
+		return
+	}
+	if nil == archXml {
+		return
+	}
+	tasks := archXml.GetTasks()
+	if len(tasks) == 0 {
+		return
+	}
+	for index := range tasks {
+		tryHandleArchTask(tasks[index])
+		core.Logger.Println()
+	}
+}
+
+func tryHandleArchContext(cmdFlags *env.CmdFlags) {
+	if task, exist := cmdFlags.GetArchTask(); exist {
+		tryHandleArchTask(task)
+	}
+}
+
+func tryHandleArchTask(archTask env.ArchTask) {
+	tryHandleRevArch(archTask)
+	tryHandleDateArch(archTask)
+	tryHandleRevDiffArch(archTask)
+	tryHandleDateDiffArch(archTask)
+}
+
+func tryHandleRevArch(archTask env.ArchTask) {
+	ctx, err := archTask.GetRevArchContext()
 	if nil != err {
 		core.Logger.Warnln(fmt.Sprintf("RevArch Error[%s]!", err))
 		return
@@ -40,8 +70,8 @@ func tryHandleRevArch(cmdFlags *env.CmdFlags) {
 	core.HandleRevArch(ctx)
 }
 
-func tryHandleDateArch(cmdFlags *env.CmdFlags) {
-	ctx, err := cmdFlags.GetDateArchContext()
+func tryHandleDateArch(archTask env.ArchTask) {
+	ctx, err := archTask.GetDateArchContext()
 	if nil != err {
 		core.Logger.Warnln(fmt.Sprintf("DateArch Error[%s]!", err))
 		return
@@ -49,8 +79,8 @@ func tryHandleDateArch(cmdFlags *env.CmdFlags) {
 	core.HandleDateArch(ctx)
 }
 
-func tryHandleRevDiffArch(cmdFlags *env.CmdFlags) {
-	ctx, err := cmdFlags.GetRevDiffArchContext()
+func tryHandleRevDiffArch(archTask env.ArchTask) {
+	ctx, err := archTask.GetRevDiffArchContext()
 	if nil != err {
 		core.Logger.Warnln(fmt.Sprintf("RevDiffArch Error[%s]!", err))
 		return
@@ -58,8 +88,8 @@ func tryHandleRevDiffArch(cmdFlags *env.CmdFlags) {
 	core.HandleRevDiffArch(ctx)
 }
 
-func tryHandleDateDiffArch(cmdFlags *env.CmdFlags) {
-	ctx, err := cmdFlags.GetDateDiffArchContext()
+func tryHandleDateDiffArch(archTask env.ArchTask) {
+	ctx, err := archTask.GetDateDiffArchContext()
 	if nil != err {
 		core.Logger.Warnln(fmt.Sprintf("DateDiffArch Error[%s]!", err))
 		return
