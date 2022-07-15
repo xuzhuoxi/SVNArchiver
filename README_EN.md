@@ -248,23 +248,32 @@ go 1.16.15
 		<!--Archive task list-->
 		<tasks arch-override="true">
 			<!--Archive task sample-->
-			<!-- Attribute parameters: r,d,r0,r1,d0,d1, child nodes: env, target, arch
-			<task r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
-				<env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
-				<target>H:/SvnTest</target>
-				<arch override="false">task/arch_{r}.zip</arch>
+			<!-- Attribute parameters: r,d,r0,r1,d0,d1, child nodes: env, target, arch-->
+			<task id="task1" r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
+			<env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
+			<target>H:/SvnTest</target>
+			<arch override="true">task/arch_{r}.zip</arch>
 			</task>
-		-->
 		</tasks>
+		<!--file supports json and xml, code supports md5 and sha1-->
+		<log file="json" code="sha1">export_log.json</log>
 	</arch>
 
     ````
  
     + <main-env> main environment path, **optional**, when not configured, it defaults to the directory where the executable file is located.
 
+    + <log> is the configuration for archive information logging, **optional**, if not, archive processing will not generate archive information file.
+
+      The + file attribute is the format of the archive information file, which supports json and xml.
+
+      + Signature type extracted from archive files, supports md5 and sha1.
+ 
+      + The log content value is the save path of the archived information file, and supports absolute path and relative path (relative to the main-env running value).
+
     + The attribute parameter arch-override in <tasks> is used to set whether to overwrite when the archive file already exists, true means overwrite, false means ignore
 
-    + r, d, r0, r1, d0, d1 are attribute parameters, which are required to be consistent with the parameters of the same name in [Parameter Description] (#a3.1).
+    + r, d, r0, r1, d0, d1 are attribute parameters, which are required to be consistent with the parameters of the same name in [Parameter Description](#a3.1).
 
     + <env> is the task environment path, **optional**, if not configured, use <main-env> to fill in.
 
@@ -272,7 +281,7 @@ go 1.16.15
 
     + <arch> is the archive file path, supports [wild-place character](#a3.1.12). If a relative path is used, the value of <env> node runtime is used as the relative directory.
 
-    + The attribute parameter override in <arch> is used to set whether to overwrite when an archive file with the same name already exists. true: override, false: ignore, not: use arch-override attribute.
+    + The attribute parameter override in <arch> is used to set whether to overwrite when an archive file with the same name already exists. true: override, false: ignore, no: use arch-override attribute.
 
 ### <span id="a3.3">3.3 Note<span>
 

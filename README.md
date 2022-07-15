@@ -248,19 +248,28 @@ go 1.16.15
 	    <!--归档任务列表-->
 	    <tasks arch-override="true">
 	        <!--归档任务样本-->
-	        <!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch
-	        <task r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
+	        <!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch-->
+	        <task id="task1"  r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
 	            <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
 	            <target>H:/SvnTest</target>
-	            <arch override="false">task/arch_{r}.zip</arch>
+	            <arch override="true">task/arch_{r}.zip</arch>
 	        </task>
-	        -->
 	    </tasks>
+	    <!--file支持json和xml， code支持md5和sha1-->
+	    <log file="json" code="sha1">export_log.json</log>
 	</arch>
 	
 	``` 
  
     + <main-env>为主环境路径，**可选**，当没有配置时默认为执行文件所在目录。
+
+    + <log>为归档信息记录配置，**可选**，当没有时，归档处理则不会生成归档信息文件。
+
+      + file属性为归档信息文件的格式，支持json和xml。
+
+      + 归档文件提取的特征码类型，支持md5和sha1。
+ 
+      + log内容值为归档信息文件的保存路径，支持绝对路径与相对路径(相对于main-env运行值)。
 
     + <tasks>中属性参数arch-override用于设置归档文件已经存在时是否进行覆盖，true为覆盖, false为忽略
 
