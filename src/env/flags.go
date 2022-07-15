@@ -43,18 +43,18 @@ func (f *CmdFlags) GetArchXml() (ctx *ArchXml, err error) {
 	return ctx, nil
 }
 
-func (f *CmdFlags) GetLogContext() (ctx *LogContext) {
+func (f *CmdFlags) GetLogContext() (ctx *QueryLogContext) {
 	if !f.isLogCommand() {
 		return nil
 	}
-	return &LogContext{TargetPath: f.TargetPath, LogSize: f.LogSize}
+	return &QueryLogContext{TargetPath: f.TargetPath, LogSize: f.LogSize}
 }
 
 func (f *CmdFlags) GetArchTask() (ctx ArchTask, exist bool) {
 	if !f.isArchTaskCommand() {
 		return ArchTask{}, false
 	}
-	return ArchTask{TargetPath: f.TargetPath, ArchPath: f.ArchPath, ArchOverride: true,
+	return ArchTask{TaskId: "undefined", TargetPath: f.TargetPath, ArchPath: f.ArchPath, ArchOverride: true,
 		Reversion: f.Reversion, RevDiffN: f.RevDiffN, RevDiffM: f.RevDiffM,
 		Date: f.Date, DateDiffN: f.DateDiffN, DateDiffM: f.DateDiffM}, true
 }

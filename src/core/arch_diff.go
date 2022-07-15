@@ -18,7 +18,7 @@ var (
 	titleRevDiffArch  = `"HandleRevDiffArch"`
 )
 
-func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
+func HandleDateDiffArch(ctx *env.ArchDateDiffContext) (archPath string) {
 	if nil == ctx {
 		return
 	}
@@ -38,7 +38,7 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 		return
 	}
 
-	archPath := getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	archPath = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleDataDiffArch, archPath))
 		return
@@ -47,9 +47,10 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) {
 	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), ctx.TargetPath))
 	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleDataDiffArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleDataDiffArch, fixRevN, fixRevM, archPath))
+	return
 }
 
-func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
+func HandleRevDiffArch(ctx *env.ArchRevDiffContext) (archPath string) {
 	if nil == ctx {
 		return
 	}
@@ -68,7 +69,7 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 		return
 	}
 
-	archPath := getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	archPath = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleRevDiffArch, archPath))
 		return
@@ -77,6 +78,7 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) {
 	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
 	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleRevDiffArch, fixRevN, fixRevM, archPath))
+	return
 }
 
 func getRev(ctx *env.ArchDateDiffContext) (logResult *model.LogResult, revN, revM model.LogRev, err error) {

@@ -9,6 +9,7 @@ import (
 )
 
 type ArchTask struct {
+	TaskId       string // 任务标识
 	TargetPath   string // 归档处理的svn目录，可以是svn仓库的非根目录。
 	ArchPath     string // 归档文件保存路径，支持通配符。
 	ArchOverride bool   // 归档文件存在时是否覆盖。
@@ -119,6 +120,7 @@ func (o *ArchXmlArchNode) IsUnknown() bool {
 }
 
 type ArchXmlTask struct {
+	Id     string           `xml:"id,attr"`
 	Env    string           `xml:"env"`
 	Target string           `xml:"target"`
 	Arch   *ArchXmlArchNode `xml:"arch"`
@@ -136,14 +138,22 @@ type ArchXmlTasks struct {
 	Tasks        []*ArchXmlTask `xml:"task"`
 }
 
+type ArchXmlLog struct {
+	FileType string `xml:"file,attr"`
+	CodeType string `xml:"code,attr"`
+	XmlValue string `xml:",innerxml"`
+}
+
 type ArchXml struct {
 	MainEnv string        `xml:"main-env"`
 	Tasks   *ArchXmlTasks `xml:"tasks"`
+	Log     *ArchXmlLog   `xml:"log"`
 }
 
 func (o *ArchXml) Init() {
 	o.initMainEnv()
 	o.initTasks()
+	o.initLog()
 }
 
 func (o *ArchXml) initMainEnv() {
@@ -176,6 +186,18 @@ func (o *ArchXml) initTasks() {
 	}
 }
 
+func (o *ArchXml) initLog() {
+	if nil == o.Log {
+		return
+	}
+	if filex.IsAbsFormat(o.Log.XmlValue) {
+		return
+	}
+	o.Log.XmlValue = filex.Combine(o.MainEnv, o.Log.XmlValue)
+	o.Log.FileType = strings.ToLower(o.Log.FileType)
+	o.Log.CodeType = strings.ToLower(o.Log.CodeType)
+}
+
 func (o *ArchXml) getTaskEnv(task *ArchXmlTask) string {
 	if task.Env == "" {
 		return o.MainEnv
@@ -197,10 +219,15 @@ func (o *ArchXml) GetTasks() []ArchTask {
 		if !xmlTask.Arch.IsUnknown() {
 			override = xmlTask.Arch.IsOverride()
 		}
-		task := ArchTask{TargetPath: xmlTask.Target, ArchPath: xmlTask.Arch.XmlValue, ArchOverride: override,
+		task := ArchTask{TaskId: xmlTask.Id,
+			TargetPath: xmlTask.Target, ArchPath: xmlTask.Arch.XmlValue, ArchOverride: override,
 			Reversion: xmlTask.R, RevDiffN: xmlTask.R0, RevDiffM: xmlTask.R1,
 			Date: xmlTask.D, DateDiffN: xmlTask.D0, DateDiffM: xmlTask.D1}
 		rs[index] = task
 	}
 	return rs
+}
+
+func (o *ArchXml) LogEnabled() bool {
+	return o.Log != nil
 }

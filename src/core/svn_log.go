@@ -9,27 +9,27 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 )
 
-func HandleLog(ctx *env.LogContext) {
+func HandleSvnLog(ctx *env.QueryLogContext) {
 	if nil == ctx {
 		return
 	}
 	if ctx.LogSize < 0 {
-		Logger.Warnln(fmt.Sprintf(`HandleLog log value[%d] should >= 0. `, ctx.LogSize))
+		Logger.Warnln(fmt.Sprintf(`HandleSvnLog log value[%d] should >= 0. `, ctx.LogSize))
 		return
 	}
-	Logger.Infoln(`HandleLog with command["svn log"]:`)
+	Logger.Infoln(`HandleSvnLog with command["svn log"]:`)
 	rs, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf(`HandleLog ["svnQueryLog"] Error[%s]`, err))
+		Logger.Warnln(fmt.Sprintf(`HandleSvnLog ["svnQueryLog"] Error[%s]`, err))
 		return
 	}
 	es := rs.LogEntries
 	size := ctx.LogSize
-	logLimmit := size > 0
-	Logger.Infoln(fmt.Sprintf(`HandleLog Result[MaxSize=%d, PrintSize=%d]:`, len(es), size))
+	logLimit := size > 0
+	Logger.Infoln(fmt.Sprintf(`HandleSvnLog Result[MaxSize=%d, PrintSize=%d]:`, len(es), size))
 	for index := len(es) - 1; index >= 0; index -= 1 {
 		printLogEntry(es[index])
-		if logLimmit {
+		if logLimit {
 			size -= 1
 			if size == 0 {
 				break

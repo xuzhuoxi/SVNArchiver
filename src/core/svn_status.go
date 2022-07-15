@@ -8,14 +8,14 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 )
 
-func HandleStatus(ctx *env.LogContext) {
+func HandleSvnStatus(ctx *env.QueryLogContext) {
 	if nil == ctx {
 		return
 	}
-	fmt.Println(`Handle "svn status" Command:`)
+	Logger.Println(`Handle "svn status" Command:`)
 	rs, err := svn.QueryStatus(ctx.TargetPath)
 	if nil != err {
-		fmt.Println("QueryStatus Error:", err)
+		Logger.Warnln("QueryStatus Error:", err)
 		return
 	}
 	for _, v := range rs.StatusTarget.EntryList {
@@ -25,6 +25,6 @@ func HandleStatus(ctx *env.LogContext) {
 			author = "unknown"
 		}
 		date := committed.DateString()
-		fmt.Println(fmt.Sprintf("%d \t %s \t %s \t %s", committed.Revision, date, author, v.Path))
+		Logger.Println(fmt.Sprintf("%d \t %s \t %s \t %s", committed.Revision, date, author, v.Path))
 	}
 }

@@ -3,20 +3,19 @@
 package core
 
 import (
-	"fmt"
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
 )
 
-func HandleVersion(ctx *env.VersionContext) {
+func HandleVersion(ctx *env.QueryVersionContext) {
 	if nil == ctx {
 		return
 	}
-	fmt.Println(`Handle "svnversion" Command:`)
+	Logger.Println(`Handle "svnversion" Command:`)
 	rs, err := svnversion.QueryVersion(ctx.TargetPath)
 	if nil != err {
-		fmt.Println("QueryVersion Error:", err)
+		Logger.Warnln("QueryVersion Error:", err)
 		return
 	}
-	fmt.Println(rs)
+	Logger.Println(rs)
 }

@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type VersionContext struct {
+type QueryVersionContext struct {
 	TargetPath string
 }
 
-type LogContext struct {
+type QueryLogContext struct {
 	TargetPath string
 	LogSize    int
 }

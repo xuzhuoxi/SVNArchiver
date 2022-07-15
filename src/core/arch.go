@@ -19,7 +19,7 @@ var (
 	titleRevArch  = `"HandleRevArch"`
 )
 
-func HandleDateArch(ctx *env.ArchDateContext) {
+func HandleDateArch(ctx *env.ArchDateContext) (archPath string) {
 	if nil == ctx {
 		return
 	}
@@ -32,7 +32,7 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 		return
 	}
 
-	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
+	archPath = getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleDataArch, archPath))
 		return
@@ -41,9 +41,10 @@ func HandleDateArch(ctx *env.ArchDateContext) {
 	Logger.Infoln(fmt.Sprintf(`%s Start: -d[%s] -r[%d] -target[%s]`, titleDataArch, ctx.DateString(), logRev.Reversion, ctx.TargetPath))
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleDataArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleDataArch, archPath))
+	return
 }
 
-func HandleRevArch(ctx *env.ArchRevContext) {
+func HandleRevArch(ctx *env.ArchRevContext) (archPath string) {
 	if nil == ctx {
 		return
 	}
@@ -60,7 +61,7 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 		return
 	}
 
-	archPath := getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
+	archPath = getArchPathD(ctx.ArchPath, logResult, logRev.Reversion)
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleRevArch, archPath))
 		return
@@ -69,6 +70,7 @@ func HandleRevArch(ctx *env.ArchRevContext) {
 	Logger.Infoln(fmt.Sprintf(`%s Start: -r[%d] -target[%s]`, titleRevArch, ctx.Reversion, ctx.TargetPath))
 	archReversion(ctx.TargetPath, logRev.Reversion, archPath, titleRevArch)
 	Logger.Infoln(fmt.Sprintf(`%s Finish: file=[%s]`, titleRevArch, archPath))
+	return
 }
 
 func queryReversion(targetPath string, date time.Time) (logResult *model.LogResult, logRev model.LogRev, err error) {
