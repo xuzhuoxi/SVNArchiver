@@ -9,10 +9,10 @@ import (
 )
 
 type ArchLogItem struct {
-	Id       string `xml:"id,attr" json:"id"`
-	Code     string `xml:"code,attr" json:"code"`
-	FileName string `xml:"name,attr" json:"name"`
-	FilePath string `xml:",innerxml" json:"path"`
+	Id       string `xml:"id,attr" json:"id"`     // 归档Id
+	Code     string `xml:"code,attr" json:"code"` // 归档文件特征码
+	FileName string `xml:"name,attr" json:"name"` // 归档文件名称
+	FilePath string `xml:",innerxml" json:"path"` // 归档文件路径
 }
 
 func (o ArchLogItem) String() string {
@@ -20,8 +20,8 @@ func (o ArchLogItem) String() string {
 }
 
 type ArchLog struct {
-	Date string         `xml:"date,attr" json:"date"`
-	Logs []*ArchLogItem `xml:"arch" json:"arch"`
+	Date string         `xml:"date,attr" json:"date"` // 本次归档执行的时间
+	Logs []*ArchLogItem `xml:"arch" json:"arch"`      // 归档处理信息列表
 }
 
 func (o ArchLog) String() string {
@@ -33,8 +33,8 @@ func NewOutLogContext(archXmlLog *ArchXmlLog) *OutLogContext {
 }
 
 type OutLogContext struct {
-	ArchXmlLog *ArchXmlLog
-	ArchLog    *ArchLog `xml:"log" json:"log"`
+	ArchXmlLog *ArchXmlLog // 归档信息输出配置
+	ArchLog    *ArchLog    `xml:"log" json:"log"` // 归档信息文件的根节点
 }
 
 func (c *OutLogContext) AppendLog(id string, code string, filePath string) {
