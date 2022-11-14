@@ -32,6 +32,8 @@ go 1.16.15
 
 ### <span id="a2.3">2.3 Run <span>
 
++ The running machine requires that the Svn client tool has been installed and configured.
+
 + only supports command line operation
 
 + Reference command:
@@ -103,7 +105,7 @@ go 1.16.15
   Used when archiving completely, to specify a point in time and use the version number at that point in time (or the most recent version number onwards) for archiving.
 
 + <span id="a3.1.8">-r0<span>
- 
+
   Used in differential archiving to specify the starting version number.
 
 + <span id="a3.1.9">-r1<span>
@@ -151,7 +153,7 @@ go 1.16.15
   Example: `SVNArchiver -env=environment_path -r=12 -target=archive_svn_directory -arch=archive_path_{d}_{r}.zip`
 
   + -env:**non-essential**
-   
+  
     Specify a new environment path to override the directory where the program "SVNArchiver" is executed.
 
   + -r:**required**
@@ -171,7 +173,7 @@ go 1.16.15
   Example: `SVNArchiver -env=environment_path -d=20060102T150405 -target=archive_svn_directory -arch=archive_path_{d}_{r}.zip`
 
   + -env:**non-essential**
-   
+  
     Specify a new environment path to override the directory where the program "SVNArchiver" is executed.
 
   + -d:**required**
@@ -191,7 +193,7 @@ go 1.16.15
   Example: `SVNArchiver -env=environment_path -r0=1 -r1=12 -target=archive_svn_directory -arch=archive_path_{d0}_{d1}_{r0}_{r1}.zip`
 
   + -env:**non-essential**
-   
+  
     Specify a new environment path to override the directory where the program "SVNArchiver" is executed.
 
   + -r0 and -r1:**At least one**
@@ -213,7 +215,7 @@ go 1.16.15
   Example: `SVNArchiver -env=environment_path -d0=20220703 -d1=20220709T150405 -target=archive_svn_directory -arch=archive_path_{d0}_{d1}_{r0}_{r1}.zip`
 
   + -env:**non-essential**
-   
+  
     Specify a new environment path to override the directory where the program "SVNArchiver" is executed.
 
   + -d0 and -d1:**At least one**
@@ -235,14 +237,14 @@ go 1.16.15
   Example: `SVNArchiver -xml=xml configuration file path`
 
   + -xml:**required**
-   
+  
   Specify a configuration file path in xml format, and users can batch process the archiving function in the configuration file.
 
   + XML format description:
 
     ````
-	<?xml version="1.0" encoding="UTF-8"?>
-	<arch>
+	  <?xml version="1.0" encoding="UTF-8"?>
+	  <arch>
 		<!--Main environment path-->
 		<main-env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export</main-env>
 		<!--Archive task list-->
@@ -257,10 +259,10 @@ go 1.16.15
 		</tasks>
 		<!--file supports json and xml, code supports md5 and sha1-->
 		<log file="json" code="sha1">export_log.json</log>
-	</arch>
-
+	  </arch>
+    
     ````
- 
+
     + <main-env> main environment path, **optional**, when not configured, it defaults to the directory where the executable file is located.
 
     + <log> is the configuration for archive information logging, **optional**, if not, archive processing will not generate archive information file.
@@ -268,7 +270,7 @@ go 1.16.15
       The + file attribute is the format of the archive information file, which supports json and xml.
 
       + Signature type extracted from archive files, supports md5 and sha1.
- 
+
       + The log content value is the save path of the archived information file, and supports absolute path and relative path (relative to the main-env running value).
 
     + The attribute parameter arch-override in <tasks> is used to set whether to overwrite when the archive file already exists, true means overwrite, false means ignore
@@ -311,4 +313,4 @@ xuzhuoxi
 
 ## Open Source License
 
-~~SVNArchiver source code is open source under the [MIT license](/LICENSE). ~~
+SVNArchiver source code is open source under the [MIT license](/LICENSE). 
