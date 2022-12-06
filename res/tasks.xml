@@ -5,13 +5,16 @@
     <!--归档任务列表-->
     <tasks arch-override="true">
         <!--归档任务样本-->
-        <!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch
-        <task id="task1"  r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
+        
+		<!-- 属性参数：r,d,r0,r1,d0,d1, 子节点: env, target, arch-->
+        <!--
+		<task id="task1"  r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
             <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
             <target>H:/SvnTest</target>
             <arch override="true">task/arch_{r}.zip</arch>
         </task>
         -->
+		
         <task id="task_0" r="17">
             <target>H:/SvnTest</target>
             <arch override="false">task/arch_{r}.zip</arch>
@@ -34,6 +37,6 @@
             <arch>arch_diff_{r0}_{r1}.zip</arch>
         </task>
     </tasks>
-    <!--file支持json和xml， code支持md5和sha1-->
+    <!--file支持json和xml, code支持md5和sha1-->
     <log file="json" code="sha1">export_log.json</log>
 </arch>
