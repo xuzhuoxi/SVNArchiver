@@ -14,10 +14,15 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-*.log
+go.work
+go.work.sum
 /.idea/
+
+*.log
 /export/
 /build/
+!/build/build.bat
+!/build/build.sh
 !/build/goxc_build.bat
 !/build/goxc_build.sh
 /.temp_export/
