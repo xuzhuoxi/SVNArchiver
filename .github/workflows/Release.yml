@@ -1,11 +1,20 @@
+# 发版流程、注意事项见同目录 Release.md
 name: Release
+
+# 仅在推送 tag 时触发。GitHub 无法把 branches 与 tags 组合成「只在 main 上打 tag」
+#（二者为或关系，且分别匹配 refs/heads/* 与 refs/tags/*），因此用 tags 触发，再在 job 内校验提交是否在 main。
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*' # 例如 v1.0.3、v1.0.3-rc.1；1.0.3 / v1.0 不会触发
 
+# 创建 Release、上传附件。GITHUB_TOKEN 由 GitHub 自动注入，无需在 Secrets 中配置。
+# 发布者会显示为 github-actions[bot]，无法改成推 tag 的用户。
 permissions:
   contents: write
+
+env:
+  APP_NAME: SVNArchiver
 
 jobs:
   release:
@@ -16,8 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # 需要完整历史，才能判断 tag 提交是否为 main 的祖先
 
+      # github.ref 在 tag 推送时是 refs/tags/...，不能用 if: github.ref == refs/heads/main
       - name: Ensure tag is on main
         run: |
           git fetch origin main
@@ -32,10 +42,10 @@ jobs:
           cache: true
 
       - name: Build release binaries
+        # GITHUB_REF_NAME 为 tag 短名，如 v1.0.3
         run: |
           set -euo pipefail
 
-          app_name="SVNArchiver"
           version="${GITHUB_REF_NAME}"
           out_dir="${GITHUB_WORKSPACE}/dist"
           mkdir -p "${out_dir}"
@@ -52,7 +62,7 @@ jobs:
           for target in "${targets[@]}"; do
             goos="${target%/*}"
             goarch="${target#*/}"
-            bin_name="${app_name}"
+            bin_name="${APP_NAME}"
             if [[ "${goos}" == "windows" ]]; then
               bin_name="${bin_name}.exe"
             fi
@@ -64,7 +74,7 @@ jobs:
 
             cp LICENSE README.md README_EN.md "${work_dir}/"
 
-            archive_base="${app_name}_${version}_${goos}_${goarch}"
+            archive_base="${APP_NAME}_${version}_${goos}_${goarch}"
             if [[ "${goos}" == "windows" ]]; then
               (cd "${work_dir}" && zip -q "${out_dir}/${archive_base}.zip" ./*)
             else
@@ -78,30 +88,40 @@ jobs:
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # 手写说明 notes/release/ReleaseNotes_<tag>.md 须与 tag 同名且已在被 tag 的提交中；
+        # 有则置于正文最前（同 v1.0.2），再追加自动 notes。
+        # tag 含 "-" 视为预发布（如 v1.0.3-rc.1）。
+        # 已存在则覆盖附件并更新正文。
         run: |
           set -euo pipefail
 
           notes_file="notes/release/ReleaseNotes_${GITHUB_REF_NAME}.md"
-          prerelease_flag=()
-          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
-            prerelease_flag=(--prerelease)
-          fi
-
-          create_args=(
-            "${GITHUB_REF_NAME}"
-            dist/*
-            --title "${GITHUB_REF_NAME}"
-            "${prerelease_flag[@]}"
-          )
+          combined_notes="$(mktemp)"
 
           if [[ -f "${notes_file}" ]]; then
-            create_args+=(--notes-file "${notes_file}")
-          else
-            create_args+=(--generate-notes)
+            cat "${notes_file}" > "${combined_notes}"
+            printf '\n\n' >> "${combined_notes}"
+          fi
+
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="${GITHUB_REF_NAME}" \
+            -f target_commitish="${GITHUB_SHA}" \
+            --jq .body >> "${combined_notes}"
+
+          prerelease_args=()
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            prerelease_args=(--prerelease)
           fi
 
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
             gh release upload "${GITHUB_REF_NAME}" dist/* --clobber
+            gh release edit "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --notes-file "${combined_notes}" \
+              "${prerelease_args[@]}"
           else
-            gh release create "${create_args[@]}"
+            gh release create "${GITHUB_REF_NAME}" dist/* \
+              --title "${GITHUB_REF_NAME}" \
+              --notes-file "${combined_notes}" \
+              "${prerelease_args[@]}"
           fi
