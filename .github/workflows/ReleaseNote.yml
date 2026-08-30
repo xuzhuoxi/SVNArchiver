@@ -1,7 +1,8 @@
 # 仅用于手动更新已有 GitHub Release 的正文，不构建、不上传附件。用法见同目录 ReleaseNote.md。
 name: ReleaseNote
 
-# GitHub 无法把远程 tag 做成动态下拉框，需在输入项中填写已有 tag 名。
+# GitHub 无法把「要更新的 Release」做成 tag 动态下拉框，需在输入项中填写已有 tag 名。
+# Use workflow from 里可以切到 Tags，那是选「用哪次提交上的 workflow」，本工作流应选包含最新说明的分支。
 on:
   workflow_dispatch:
     inputs:

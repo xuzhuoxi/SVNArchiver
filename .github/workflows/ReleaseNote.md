@@ -42,7 +42,16 @@
 
 仅 `workflow_dispatch`，只能在 GitHub 网页上手动运行，推送代码或打 tag **不会**触发。
 
-GitHub 无法把远程 tag 做成动态下拉框，运行时需在输入项中 **填写** 已有 tag 名（例如 `v1.1.0`）。
+Run workflow 弹窗里有 **两处** 选择，含义不同：
+
+| 控件 | 选的是什么 | 本工作流应怎么选 |
+| --- | --- | --- |
+| **Use workflow from** | 用哪一次提交上的 workflow 文件，以及从哪次提交读取 `ReleaseNotes_*.md` | 选 **分支**（一般为 `main`），不要选 tag |
+| **tag 输入框** | 要更新哪一个 GitHub Release | **手填** tag 名，例如 `v1.1.0` |
+
+**Use workflow from** 点开后，和仓库里切换分支一样，顶部可以切 **Branches / Tags**。切到 Tags 就能选 tag，但那只表示「在这个 tag 的代码上跑工作流」。该 tag 提交里往往还没有后来补的说明文件，本工作流会读不到 `ReleaseNotes_*.md`。
+
+**tag 输入框** 不能变成仓库 tag 的动态下拉列表。`workflow_dispatch` 的 `choice` 只能写死选项，没有「列出全部远程 tag」这种类型，所以必须手填。
 
 ## 4. 运行前检查
 
@@ -54,8 +63,8 @@ GitHub 无法把远程 tag 做成动态下拉框，运行时需在输入项中 *
 
 1. 将说明文件提交并推到目标分支（一般为 `main`）。
 2. 打开 **Actions → ReleaseNote → Run workflow**。
-3. **Use workflow from** 选包含该说明文件的分支。
-4. 在 **tag** 输入框填写已有 tag（例如 `v1.1.0`）。也可写成 `refs/tags/v1.1.0`，工作流会去掉前缀。
+3. **Use workflow from** 选包含该说明文件的 **分支**（一般为 `main`）。点开后若出现 Tags，不要用它来指定要更新的 Release。
+4. 在 **tag** 输入框 **填写** 已有 tag（例如 `v1.1.0`）。也可写成 `refs/tags/v1.1.0`，工作流会去掉前缀。
 5. 运行成功后，到 **Releases** 页确认正文已换成该文件内容。
 
 写入的是文件全文，**不会**再追加 GitHub 自动生成的 notes。附件、标题、prerelease 标记保持不变。
