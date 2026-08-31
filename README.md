@@ -4,24 +4,33 @@ SVN归档工具
 中文 | [English](README_EN.md)  
 
 ## <span id="a1">兼容性</span>
-go 1.16.15  
+go 1.24  
 
 ## <span id="a2">开始</span>
 
 ### <span id="a2.1">2.1 下载</span>
 + 下载发行版本 [这里](https://github.com/xuzhuoxi/SVNArchiver/releases).  
-+ 下载仓库:  
++ 克隆仓库:  
 ```sh
-  go get -u github.com/xuzhuoxi/SVNArchiver
+  git clone https://github.com/xuzhuoxi/SVNArchiver.git
 ```
 
-### <span id="a2.2">2.2 构建<span>
-+ 如果你已经下载整个仓库及相关依赖仓库，你可以执行构造脚本获得执行程序。  
-  + Windows下执行[goxc_build.bat](/build/goxc_build.bat)  
-  + Linux下执行[goxc_build.sh](/build/goxc_build.sh)  
-+ 如有必要，你可以修改 ([goxc_build.sh](/goxc_build/build.sh))来进行自定义的构造，构造工具的说明在[这里](https://github.com/laher/goxc).  
+### <span id="a2.2">2.2 构建</span>
++ 要求已安装 [Go 1.24+](https://go.dev/dl/)，并启用 Go module。入口为 `./src`。  
++ 本地交叉编译（含单元测试、多平台二进制、源码打包）：  
+  + Windows 下执行 [build/build.bat](/build/build.bat)  
+  + Linux / macOS 下执行 [build/build.sh](/build/build.sh)  
++ 也可使用 [goxc](https://github.com/laher/goxc) 构造：  
+  + Windows 下执行 [build/goxc_build.bat](/build/goxc_build.bat)  
+  + Linux 下执行 [build/goxc_build.sh](/build/goxc_build.sh)  
+  + 如有必要，可修改上述脚本进行自定义构造，工具说明见 [goxc](https://github.com/laher/goxc)。  
++ 仅编译当前平台：  
+```sh
+  go build -o SVNArchiver ./src
+```
++ GitHub 上在 `main` 推送 `v*.*.*` tag 时，[Release](/.github/workflows/Release.yml) 工作流会自动交叉编译并发布。说明见 [Release.md](/.github/workflows/Release.md)。  
 
-### <span id="a2.3">2.3 运行<span>
+### <span id="a2.3">2.3 运行</span>
 + 运行机器上要求已经安装配置好Svn客户端工具。  
 + 仅支持命令行运行  
 + 参考命令：  
@@ -177,8 +186,9 @@ go 1.16.15
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.update.html  
 
 ## 依赖性
-+ infra-go(库依赖) [https://github.com/xuzhuoxi/infra-go](https://github.com/xuzhuoxi/infra-go)  
-+ goxc(编译依赖) [https://github.com/laher/goxc](https://github.com/laher/goxc)   
++ infra-go（库依赖） [https://github.com/xuzhuoxi/infra-go](https://github.com/xuzhuoxi/infra-go)  
++ golang.org/x/text（库依赖） [https://pkg.go.dev/golang.org/x/text](https://pkg.go.dev/golang.org/x/text)  
++ goxc（编译依赖，可选） [https://github.com/laher/goxc](https://github.com/laher/goxc)   
 
 ## 联系作者
 xuzhuoxi   

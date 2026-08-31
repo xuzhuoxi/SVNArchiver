@@ -4,24 +4,33 @@ SVN Archive tool.
 [中文](README.md) | English  
 
 ## <span id="a1">Compatibility</span>
-go 1.16.15  
+go 1.24  
 
 ## <span id="a2">Start</span>
 
 ### <span id="a2.1">2.1 Download</span>
 + Download releases [here](https://github.com/xuzhuoxi/SVNArchiver/releases).  
-+ Download repository:  
-````sh
-  go get -u github.com/xuzhuoxi/SVNArchiver
-````
++ Clone the repository:  
+```sh
+  git clone https://github.com/xuzhuoxi/SVNArchiver.git
+```
 
-### <span id="a2.2">2.2 Build <span>
-+ If you have downloaded the entire repository and related dependencies, you can execute the build script to get the executable.  
-  + Execute [goxc_build.bat](/build/goxc_build.bat) under Windows  
-  + Execute [goxc_build.sh](/build/goxc_build.sh) under Linux  
-+ If necessary, you can modify ([goxc_build.sh](/goxc_build/build.sh)) to do custom builds, the build tool instructions are [here](https://github.com/laher/goxc ).  
+### <span id="a2.2">2.2 Build</span>
++ Requires [Go 1.24+](https://go.dev/dl/) with Go modules enabled. The main package is `./src`.  
++ Local cross-compile (unit tests, multi-platform binaries, and source archive):  
+  + Windows: [build/build.bat](/build/build.bat)  
+  + Linux / macOS: [build/build.sh](/build/build.sh)  
++ You can also build with [goxc](https://github.com/laher/goxc):  
+  + Windows: [build/goxc_build.bat](/build/goxc_build.bat)  
+  + Linux: [build/goxc_build.sh](/build/goxc_build.sh)  
+  + Modify those scripts for a custom build if needed. Tool documentation: [goxc](https://github.com/laher/goxc).  
++ Build for the current platform only:  
+```sh
+  go build -o SVNArchiver ./src
+```
++ Pushing a `v*.*.*` tag on `main` triggers the [Release](/.github/workflows/Release.yml) workflow to cross-compile and publish. See [Release.md](/.github/workflows/Release.md).  
 
-### <span id="a2.3">2.3 Run <span>
+### <span id="a2.3">2.3 Run</span>
 + The running machine requires that the Svn client tool has been installed and configured.  
 + only supports command line operation  
 + Reference command:  
@@ -177,8 +186,9 @@ Example: `SVNArchiver -xml=xml configuration file path`
 - https://svnbook.red-bean.com/en/1.8/svn.ref.svn.c.update.html  
 
 ## Dependencies
-- infra-go (library dependency) [https://github.com/xuzhuoxi/infra-go](https://github.com/xuzhuoxi/infra-go)  
-- goxc (compile dependency) [https://github.com/laher/goxc](https://github.com/laher/goxc)  
+- infra-go (library) [https://github.com/xuzhuoxi/infra-go](https://github.com/xuzhuoxi/infra-go)  
+- golang.org/x/text (library) [https://pkg.go.dev/golang.org/x/text](https://pkg.go.dev/golang.org/x/text)  
+- goxc (optional compile dependency) [https://github.com/laher/goxc](https://github.com/laher/goxc)  
 
 ## Contact the author
 xuzhuoxi  
