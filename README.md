@@ -217,13 +217,14 @@ go 1.24
 
 | 调用 | 命令 | 本地 / 远程 |
 |---|---|---|
-| 查询工作副本版本 | `svnversion -n -c <path>` | 本地 |
-| 查询本地状态 | `svn status -v --xml <path>` | 本地 |
-| 查询提交记录、归档定版本 | `svn log -v --revision min:max --xml <path>` | 远程（`min:max` 来自上一行 `svnversion -c`，**不是** Show log 的全程） |
+| `HandleLocalVersion`（`QueryLocalVersion`） | `svnversion -n -c <path>` | 本地 |
+| `HandleLocalSvnStatus`（`QueryStatus`） | `svn status -v --xml <path>` | 本地 |
+| `QueryLogRange` | `svn log -v --revision min:max --xml <path>` | 远程 |
+| `QueryLog` | `QueryLocalVersion` + `QueryLogRange` | 远程（`min:max` 来自 `QueryLocalVersion`，**不是** Show log 的全程）
 | 差异归档 | `svn diff -rN:M --xml --summarize <path>` | 远程 |
 | 导出归档内容 | `svn export -rN <path> <dist>` | 远程 |
 
-查询提交与归档都会先跑本地 `svnversion`，再跑远程 `svn log`，因此机器仍需能连上仓库。   
+查询提交与归档都会先跑本地 `QueryLocalVersion`（`svnversion -c`），再跑远程 `svn log`，因此机器仍需能连上仓库。   
 
 ## <span id="a4">参考文献<span> 
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html  

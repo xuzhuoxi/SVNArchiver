@@ -1,7 +1,7 @@
-// Package svnversion
+// Package svn
 // Create on 2022/7/7
 // @author xuzhuoxi
-package svnversion
+package svn
 
 import (
 	"fmt"
@@ -35,7 +35,7 @@ func (r VersionResult) String() string {
 	return fmt.Sprintf("{Min:%d, Max:%d}", r.Min, r.Max)
 }
 
-// QueryVersion 读取本地工作副本元数据，不连接仓库。
+// QueryLocalVersion 读取本地工作副本元数据，不连接仓库。
 // 实际命令: svnversion -n -c <path>
 // path 只能是工作副本路径，不能是仓库 URL。
 // 输出为单一版本号 N，或混合区间 min:max，末尾可带 M/S/P。
@@ -43,7 +43,7 @@ func (r VersionResult) String() string {
 // 不等于 svn log 的完整历史（中间版本可能不连续，已被后续修改覆盖的提交也不会出现）。
 // 非工作副本时 svnversion 会输出英文说明（如 Unversioned directory），此时解析失败。
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html
-func QueryVersion(path string) (r *VersionResult, err error) {
+func QueryLocalVersion(path string) (r *VersionResult, err error) {
 	cmd := exec.Command(CommandName, ArgNoNewline, ArgCommitted, path)
 	out, err := cmd.CombinedOutput()
 	if nil != err {

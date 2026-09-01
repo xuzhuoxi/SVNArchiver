@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,8 +20,26 @@ type LogResult struct {
 	LogEntries []*LogResultEntry `xml:"logentry"` // 默认按reversion升序存放
 }
 
+func (r *LogResult) HandleLogs() {
+	r.sortLogEntries(true)
+}
+
 func (r *LogResult) LogSize() int {
 	return len(r.LogEntries)
+}
+
+func (r *LogResult) MinRev() int {
+	if 0 == len(r.LogEntries) {
+		return 0
+	}
+	return r.LogEntries[0].Revision
+}
+
+func (r *LogResult) MaxRev() int {
+	if 0 == len(r.LogEntries) {
+		return 0
+	}
+	return r.LogEntries[len(r.LogEntries)-1].Revision
 }
 
 func (r *LogResult) GetReversionList() []int {
@@ -179,6 +198,21 @@ func (r *LogResult) GetLastLogEntry() (e *LogResultEntry, err error) {
 	return r.LogEntries[r.LogSize()-1], nil
 }
 
+// sortLogEntries 按 Revision 原地排序 LogEntries。
+// asc 为 true 时升序（小版本在前），false 时降序（大版本在前）。
+// MinRev / MaxRev / GetCommittedRevision 等按两端与顺序查找的方法假定为升序。
+func (r *LogResult) sortLogEntries(asc bool) {
+	if nil == r || len(r.LogEntries) < 2 {
+		return
+	}
+	sort.Slice(r.LogEntries, func(i, j int) bool {
+		if asc {
+			return r.LogEntries[i].Revision < r.LogEntries[j].Revision
+		}
+		return r.LogEntries[i].Revision > r.LogEntries[j].Revision
+	})
+}
+
 type LogResultEntry struct {
 	Revision int             `xml:"revision,attr"`
 	Author   string          `xml:"author"`
@@ -229,7 +263,7 @@ func (l *LogResultEntry) GetSimpleRev() LogRev {
 	return LogRev{Reversion: l.Revision, Date: l.GetDate(), DateStr: l.Date}
 }
 
-func (l LogResultEntry) String() string {
+func (l *LogResultEntry) String() string {
 	return fmt.Sprintf("{Revision:%d, Author:%s, Date:%s, Msg:%s}", l.Revision, l.Author, l.Date, l.Msg)
 }
 

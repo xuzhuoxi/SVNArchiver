@@ -4,6 +4,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -67,8 +68,13 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) (archPath string, err error)
 	}
 
 	Logger.Infoln(titleRevDiffArch, ":------------------------------------------------------------------------------------")
+	if !ctx.ExitRange() {
+		err = errors.New("ArchRevDiffContext.ExitRange false. ")
+		Logger.Warnln(fmt.Sprintf(`%s [%s]`, titleRevDiffArch, err))
+		return "", err
+	}
 
-	logResult, err := svn.QueryLog(ctx.TargetPath)
+	logResult, err := svn.QueryLogRange(ctx.TargetPath, ctx.RevStart, ctx.RevTarget)
 	if nil != err {
 		Logger.Warnln(fmt.Sprintf(`%s ["svn.QueryLog"] Error[%s]`, titleRevDiffArch, err))
 		return "", err

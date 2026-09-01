@@ -10,11 +10,11 @@ import (
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 )
 
-func HandleSvnStatus(ctx *env.QueryLogContext) {
+func HandleLocalSvnStatus(ctx *env.QueryLogContext) {
 	if nil == ctx {
 		return
 	}
-	Logger.Println(`Handle "svn status" Command:`)
+	Logger.Println(`HandleLocalSvnStatus with command["svn status"]:`)
 	rs, err := svn.QueryStatus(ctx.TargetPath)
 	if nil != err {
 		Logger.Warnln("QueryStatus Error:", err)

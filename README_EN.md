@@ -217,13 +217,14 @@ A repository URL, a historical `-r` (other than `BASE`), or `status -u` will con
 
 | Use | Command | Local / remote |
 |---|---|---|
-| WC revision range | `svnversion -n -c <path>` | Local |
-| Local status | `svn status -v --xml <path>` | Local |
-| Commit log / pick archive revision | `svn log -v --revision min:max --xml <path>` | Remote (`min:max` comes from `svnversion -c` above, **not** the full Show log range) |
+| `HandleLocalVersion` (`QueryLocalVersion`) | `svnversion -n -c <path>` | Local |
+| `HandleLocalSvnStatus` (`QueryStatus`) | `svn status -v --xml <path>` | Local |
+| `QueryLogRange` | `svn log -v --revision min:max --xml <path>` | Remote |
+| `QueryLog` | `QueryLocalVersion` + `QueryLogRange` | Remote (`min:max` from `QueryLocalVersion`, **not** the full Show log range) |
 | Diff archive | `svn diff -rN:M --xml --summarize <path>` | Remote |
 | Export archive contents | `svn export -rN <path> <dist>` | Remote |
 
-Querying commits and archiving both run local `svnversion` then remote `svn log`, so the machine still needs repository access.    
+Querying commits and archiving both run local `QueryLocalVersion` (`svnversion -c`) then remote `svn log`, so the machine still needs repository access.    
 
 ## <span id="a4">References<span> 
 - https://svnbook.red-bean.com/en/1.8/svn.ref.svnversion.re.html  
