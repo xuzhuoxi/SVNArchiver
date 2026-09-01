@@ -31,7 +31,7 @@ go 1.24
 + GitHub 上在 `main` 推送 `v*.*.*` tag 时，[Release](/.github/workflows/Release.yml) 工作流会自动交叉编译并发布。说明见 [Release.md](/.github/workflows/Release.md)。  
 
 ### <span id="a2.3">2.3 运行</span>
-+ 运行机器上要求已经安装配置好Svn客户端工具。  
++ 运行机器上要求已经安装配置好Svn**命令行**客户端（`svn`、`svnversion` 均需在 PATH 中）。详见 [3.3 注意](#a3.3)。  
 + 仅支持命令行运行  
 + 参考命令：  
   + 查询提交信息功能：   
@@ -173,8 +173,57 @@ go 1.24
     + `<arch>`中属性参数override, 用于设置当已经存在名称相同的归档文件时是否进行覆盖。 true:覆盖, flase:忽略，没有:使用arch-override属性。 
 
 ### <span id="a3.3">3.3 注意<span> 
-+ 要求安装svn客户端工具，并设置为环境变量。  
-+ 要求能正确连接到服务仓库。  
++ 要求安装 svn **命令行**客户端，并将其所在目录加入 PATH。程序会调用 `svn` 与 `svnversion`，缺一不可。  
++ 使用 **TortoiseSVN** 时：默认只安装图形界面，**不包含** `svn.exe` / `svnversion.exe`。安装或修改组件时需勾选 **Command line client tools**，确认 `C:\Program Files\TortoiseSVN\bin\` 下存在上述两个可执行文件，并把该 `bin` 加入 PATH 后**新开终端**再运行。资源管理器里能右键 Checkout/Update 并不代表命令行工具已安装。  
++ 若出现 `executable file not found in %PATH%`，一般是 PATH 中找不到 `svnversion`（或 `svn`）。可在同一终端执行 `where svn`、`where svnversion` 检查。  
++ 归档、查询提交记录需要连接仓库。本地/远程命令划分见 [3.4](#a3.4)。  
+
+### <span id="a3.4">3.4 svn 命令：本地与远程<span> 
+
+经验：看**当前工作副本**用本地命令；看**提交历史、任意两个版本的差异、仓库目录内容**用远程命令。  
+目标是仓库 URL，或带历史版本 `-r`（不是 `BASE`）、`status -u` 时，本来能本地的也会连远程。  
+
+**只读本地工作副本**（`.svn` / `wc.db`，不连仓库）：  
+
+| 命令 | 说明 |
+|---|---|
+| `svnversion` | 检出版本；加 `-c` 为各节点 last-changed 的最小/最大，**不是** `svn log` 全历史 |
+| `svn status`（不加 `-u`） | 本地增删改与调度状态 |
+| `svn info`（WC 路径，不带 `-r` 或 `-r BASE`） | URL、UUID、当前 revision 等 |
+| `svn diff`（不带 `-r`） | 工作文件 vs BASE |
+| `svn revert` / `cleanup` / `resolve` | 还原、清锁、标记冲突已解决 |
+| `svn add` / `delete` / `mkdir`（在 WC 内） | 只写入本地调度，`commit` 前未进仓库 |
+| `svn copy` / `move`（WC → WC） | 同样只是本地调度 |
+| `svn propget` / `proplist` / `propset`（WC，不带历史 `-r`） | 本地属性 |
+| `svn export`（WC 路径，不带 `-r`） | 从当前副本导出一份无 `.svn` 的树 |
+
+**必须连接仓库**：  
+
+| 命令 | 说明 |
+|---|---|
+| `svn log` | 提交说明与改动路径（Tortoise Show log 一类） |
+| `svn list` | 列仓库目录；即使参数是 WC 也会转成 URL |
+| `svn checkout` / `update` / `switch` | 拉取远程树 |
+| `svn commit` / `import` | 写入仓库 |
+| `svn merge` / `mergeinfo` / `blame` | 历史与合并信息 |
+| `svn lock` / `unlock` | 锁在仓库上 |
+| `svn copy` / `move` / `mkdir` / `delete`（带 URL） | 直接改仓库 |
+| `svn cat -r N`、`svn diff -r N:M` | 任意历史版本 |
+| `svn export URL` 或 `svn export -r N` | 按远程某版本导出 |
+| `svn status -u` | 与仓库对比是否过期 |
+| `svn info URL` 或 `svn info -r`（非 BASE） | 询问服务器 |
+
+**本程序实际调用**（`-target` 为工作副本路径时）：  
+
+| 调用 | 命令 | 本地 / 远程 |
+|---|---|---|
+| 查询工作副本版本 | `svnversion -n -c <path>` | 本地 |
+| 查询本地状态 | `svn status -v --xml <path>` | 本地 |
+| 查询提交记录、归档定版本 | `svn log -v --revision min:max --xml <path>` | 远程（`min:max` 来自上一行 `svnversion -c`，**不是** Show log 的全程） |
+| 差异归档 | `svn diff -rN:M --xml --summarize <path>` | 远程 |
+| 导出归档内容 | `svn export -rN <path> <dist>` | 远程 |
+
+查询提交与归档都会先跑本地 `svnversion`，再跑远程 `svn log`，因此机器仍需能连上仓库。   
 
 ## <span id="a4">参考文献<span> 
 - https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html  

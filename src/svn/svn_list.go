@@ -3,9 +3,11 @@ package svn
 import (
 	"encoding/xml"
 	"os/exec"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 )
 
+// QueryList
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.list.html
 func QueryList(path string, recursive bool) (l *model.ListResult, err error) {
 	var cmd *exec.Cmd

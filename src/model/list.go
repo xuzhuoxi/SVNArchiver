@@ -1,3 +1,4 @@
+// Package model
 // Create on 2022/7/9
 // @author xuzhuoxi
 package model
@@ -15,8 +16,8 @@ type ListResultEntryList struct {
 }
 
 type ListResultEntry struct {
-	Kind   string      `xml:"kind,attr"`
-	Name   string      `xml:"name"`
-	Size   int         `xml:"size"`
+	Kind   string       `xml:"kind,attr"`
+	Name   string       `xml:"name"`
+	Size   int          `xml:"size"`
 	Commit *CommitEntry `xml:"commit"`
 }

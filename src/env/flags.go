@@ -5,10 +5,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/xuzhuoxi/infra-go/filex"
-	"github.com/xuzhuoxi/infra-go/osxu"
 	"os"
 	"strings"
+
+	"github.com/xuzhuoxi/infra-go/filex"
+	"github.com/xuzhuoxi/infra-go/osxu"
 )
 
 type CmdFlags struct {

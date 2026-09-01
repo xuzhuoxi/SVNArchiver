@@ -1,3 +1,4 @@
+// Package lib
 // Create on 2022/7/10
 // @author xuzhuoxi
 package lib
@@ -5,9 +6,10 @@ package lib
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/xuzhuoxi/infra-go/archivex"
 	"github.com/xuzhuoxi/infra-go/filex"
-	"os"
 )
 
 func Archive(filePath string, archPath string, override bool) error {

@@ -1,12 +1,14 @@
+// Package core
 // Create on 2022/7/15
 // @author xuzhuoxi
 package core
 
 import (
-	"github.com/xuzhuoxi/infra-go/filex"
-	"github.com/xuzhuoxi/infra-go/osxu"
 	"os"
 	"strconv"
+
+	"github.com/xuzhuoxi/infra-go/filex"
+	"github.com/xuzhuoxi/infra-go/osxu"
 )
 
 var (

@@ -1,3 +1,4 @@
+// Package model
 // Create on 2022/7/9
 // @author xuzhuoxi
 package model
@@ -6,10 +7,11 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xuzhuoxi/SVNArchiver/src/env"
 )
 
 type LogResult struct {
@@ -33,6 +35,7 @@ func (r *LogResult) String() string {
 	return fmt.Sprintf("{Name:%v, Size=%d, Rev=%v}", r.Name, r.LogSize(), r.GetReversionList())
 }
 
+// GetDateRevision
 // 返回变动版本号
 func (r *LogResult) GetDateRevision(date time.Time) (nearRevision LogRev, err error) {
 	ln := len(r.LogEntries)
@@ -63,6 +66,7 @@ func (r *LogResult) GetDateRevision(date time.Time) (nearRevision LogRev, err er
 	return LogRev{}, errors.New(fmt.Sprintf("Revision(%v) Not Found!", date))
 }
 
+// GetCommittedRevision
 // 返回变动版本号
 func (r *LogResult) GetCommittedRevision(revision int) (committedRevision LogRev, err error) {
 	ln := len(r.LogEntries)
@@ -90,6 +94,7 @@ func (r *LogResult) GetCommittedRevision(revision int) (committedRevision LogRev
 	return LogRev{}, errors.New(fmt.Sprintf("Revision(%d) Not Found!", revision))
 }
 
+// GetPrevCommittedRevision
 // 返回上一个版本号
 func (r *LogResult) GetPrevCommittedRevision(revision int) (prevRevision LogRev, err error) {
 	ln := len(r.LogEntries)
@@ -114,6 +119,7 @@ func (r *LogResult) GetPrevCommittedRevision(revision int) (prevRevision LogRev,
 	return LogRev{}, errors.New(fmt.Sprintf("Prev Revision(%d) Not Found!", revision))
 }
 
+// GetNextCommittedRevision
 // 返回下一个版本号
 func (r *LogResult) GetNextCommittedRevision(revision int) (nextRevision LogRev, err error) {
 	ln := len(r.LogEntries)

@@ -1,11 +1,13 @@
+// Package env
 // Create on 2022/7/15
 // @author xuzhuoxi
 package env
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/infra-go/filex"
 	"time"
+
+	"github.com/xuzhuoxi/infra-go/filex"
 )
 
 type ArchLogItem struct {

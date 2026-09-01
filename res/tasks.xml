@@ -10,30 +10,30 @@
         <!--
 		<task id="task1"  r="17" d="20220709T18" r0="1" r1="2" d0="20220707T201330" d1="20220707T201410">
             <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch override="true">task/arch_{r}.zip</arch>
         </task>
         -->
-		
+        
         <task id="task_0" r="17">
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch override="false">task/arch_{r}.zip</arch>
         </task>
         <task id="task_1" d="20220709T18">
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch>task/arch_{d}_{r}.zip</arch>
         </task>
         <task id="task_2" r0="1" r1="2">
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch>task/arch_diff_{r0}_{r1}.zip</arch>
         </task>
         <task id="task_3" d0="20220707T201330" d1="20220707T201410">
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch>task/arch_diff_{d0}_{d1}.zip</arch>
         </task>
         <task id="task_4" r0="5" r1="9">
             <env>D:\workspaces\GoPath\src\github.com\xuzhuoxi\SVNArchiver\export\task</env>
-            <target>H:/SvnTest</target>
+            <target>E:\D_Docs\SvnTest</target>
             <arch>arch_diff_{r0}_{r1}.zip</arch>
         </task>
     </tasks>

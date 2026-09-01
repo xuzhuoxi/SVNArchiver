@@ -1,9 +1,10 @@
 package lib
 
 import (
+	"runtime"
+
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/simplifiedchinese"
-	"runtime"
 )
 
 var (

@@ -3,10 +3,12 @@ package svn
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"os/exec"
+
+	"github.com/xuzhuoxi/SVNArchiver/src/model"
 )
 
+// QueryDiffToLast
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
 func QueryDiffToLast(path string, rev int) (l *model.DiffResult, revN, revM int, err error) {
 	log, err := QueryLog(path)
@@ -26,6 +28,7 @@ func QueryDiffToLast(path string, rev int) (l *model.DiffResult, revN, revM int,
 	return
 }
 
+// QueryDiffToNext
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
 func QueryDiffToNext(path string, rev int) (l *model.DiffResult, revN, revM int, err error) {
 	log, err := QueryLog(path)
@@ -44,6 +47,7 @@ func QueryDiffToNext(path string, rev int) (l *model.DiffResult, revN, revM int,
 	return
 }
 
+// QueryDiffFromPrev
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
 func QueryDiffFromPrev(path string, rev int) (l *model.DiffResult, revN, revM int, err error) {
 	log, err := QueryLog(path)
@@ -62,6 +66,7 @@ func QueryDiffFromPrev(path string, rev int) (l *model.DiffResult, revN, revM in
 	return
 }
 
+// QueryDiffBetween
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.diff.html
 func QueryDiffBetween(path string, revN int, revM int) (l *model.DiffResult, err error) {
 	vStr := fmt.Sprintf("-r%d:%d", revN, revM)

@@ -4,10 +4,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os/exec"
-	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
+	"github.com/xuzhuoxi/SVNArchiver/src/svnversion"
 )
 
+// QueryLog
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.log.html
 // path可以为本地副本路径， 也可以是URL
 // path使用URL时支持支持多个路径

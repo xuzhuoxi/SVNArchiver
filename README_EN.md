@@ -31,7 +31,7 @@ go 1.24
 + Pushing a `v*.*.*` tag on `main` triggers the [Release](/.github/workflows/Release.yml) workflow to cross-compile and publish. See [Release.md](/.github/workflows/Release.md).  
 
 ### <span id="a2.3">2.3 Run</span>
-+ The running machine requires that the Svn client tool has been installed and configured.  
++ The running machine requires the Subversion **command-line** client (`svn` and `svnversion` both on PATH). See [3.3 Note](#a3.3).  
 + only supports command line operation  
 + Reference command:  
   + Query and submit information function:  
@@ -173,8 +173,57 @@ Example: `SVNArchiver -xml=xml configuration file path`
     + The attribute parameter override in `<arch>` is used to set whether to overwrite when an archive file with the same name already exists. true: override, false: ignore, no: use arch-override attribute.  
 
 ### <span id="a3.3">3.3 Note<span> 
-+ requires the svn client tool to be installed and set as an environment variable.  
-+ Requirement to be able to connect to the server repository correctly.   
++ The Subversion **command-line** client must be installed and its directory added to PATH. The program invokes both `svn` and `svnversion`; either missing will fail.  
++ If you use **TortoiseSVN**: the default install is GUI-only and does **not** include `svn.exe` / `svnversion.exe`. When installing or modifying the product, enable **Command line client tools**, confirm both executables exist under `C:\Program Files\TortoiseSVN\bin\`, add that `bin` folder to PATH, then open a **new** terminal. Being able to Checkout/Update from Explorer does not mean the CLI tools are installed.  
++ The error `executable file not found in %PATH%` usually means `svnversion` (or `svn`) is not on PATH. Check in the same terminal with `where svn` and `where svnversion`.  
++ Archiving and querying commit logs require a repository connection. See [3.4](#a3.4) for which commands are local vs remote.  
+
+### <span id="a3.4">3.4 svn commands: local vs remote<span> 
+
+Rule of thumb: inspect **the current working copy** with local commands; inspect **commit history, diffs between arbitrary revisions, or repository directory listings** with remote commands.  
+A repository URL, a historical `-r` (other than `BASE`), or `status -u` will contact the server even for commands that are otherwise local.  
+
+**Local working copy only** (`.svn` / `wc.db`, no repository contact):  
+
+| Command | Notes |
+|---|---|
+| `svnversion` | Checkout revision; with `-c`, min/max of each node's last-changed revision — **not** the full `svn log` history |
+| `svn status` (without `-u`) | Local adds/deletes/edits and scheduled changes |
+| `svn info` (WC path, no `-r` or `-r BASE`) | URL, UUID, current revision, etc. |
+| `svn diff` (no `-r`) | Working files vs BASE |
+| `svn revert` / `cleanup` / `resolve` | Revert, unlock, mark conflicts resolved |
+| `svn add` / `delete` / `mkdir` (in the WC) | Local schedule only; not in the repository until `commit` |
+| `svn copy` / `move` (WC → WC) | Likewise local schedule only |
+| `svn propget` / `proplist` / `propset` (WC, no historical `-r`) | Local properties |
+| `svn export` (WC path, no `-r`) | Export the current tree without `.svn` |
+
+**Requires the repository**:  
+
+| Command | Notes |
+|---|---|
+| `svn log` | Commit messages and changed paths (same class as Tortoise Show log) |
+| `svn list` | Lists a repository directory; a WC path is still converted to a URL |
+| `svn checkout` / `update` / `switch` | Fetch the remote tree |
+| `svn commit` / `import` | Write to the repository |
+| `svn merge` / `mergeinfo` / `blame` | History and merge info |
+| `svn lock` / `unlock` | Locks live on the repository |
+| `svn copy` / `move` / `mkdir` / `delete` (with a URL) | Direct repository changes |
+| `svn cat -r N`, `svn diff -r N:M` | Arbitrary historical revisions |
+| `svn export URL` or `svn export -r N` | Export a remote revision |
+| `svn status -u` | Compare against the repository for out-of-date items |
+| `svn info URL` or `svn info -r` (not BASE) | Query the server |
+
+**What this program actually runs** (when `-target` is a working-copy path):  
+
+| Use | Command | Local / remote |
+|---|---|---|
+| WC revision range | `svnversion -n -c <path>` | Local |
+| Local status | `svn status -v --xml <path>` | Local |
+| Commit log / pick archive revision | `svn log -v --revision min:max --xml <path>` | Remote (`min:max` comes from `svnversion -c` above, **not** the full Show log range) |
+| Diff archive | `svn diff -rN:M --xml --summarize <path>` | Remote |
+| Export archive contents | `svn export -rN <path> <dist>` | Remote |
+
+Querying commits and archiving both run local `svnversion` then remote `svn log`, so the machine still needs repository access.    
 
 ## <span id="a4">References<span> 
 - https://svnbook.red-bean.com/en/1.8/svn.ref.svnversion.re.html  

@@ -1,10 +1,12 @@
+// Package env
 // Create on 2022/7/8
 // @author xuzhuoxi
 package env
 
 import (
-	"github.com/xuzhuoxi/infra-go/mathx"
 	"strings"
+
+	"github.com/xuzhuoxi/infra-go/mathx"
 )
 
 const DateCutIndex = 22

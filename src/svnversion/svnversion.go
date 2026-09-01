@@ -1,3 +1,4 @@
+// Package svnversion
 // Create on 2022/7/7
 // @author xuzhuoxi
 package svnversion
@@ -16,28 +17,32 @@ const (
 
 const (
 	ArgNoNewline = "-n" // 不要打印换行符.
-	ArgCommitted = "-c" // 使用最近一次产生修改的版本号, 而不是当前版本号 (当前版本号是 本地可获得的, 值最大的版本号).
+	ArgCommitted = "-c" // 使用各节点最后一次提交修改的版本号 (changed_revision), 而不是检出版本号 (revision).
 )
 
 const (
-	MarkModify = "M" // 有本地悠
-	MarkSwitch = "S" // 切换过
-	MarkSparse = "P" // 稀疏
+	MarkModify = "M" // 有本地修改
+	MarkSwitch = "S" // 有 switch
+	MarkSparse = "P" // 稀疏检出
 )
 
 type VersionResult struct {
-	Min, Max               int
-	Modify, Switch, Sparse bool
+	Min, Max               int  // 单一版本时两者相同; 混合版本或 -c 时为区间两端
+	Modify, Switch, Sparse bool // 对应输出后缀 M / S / P
 }
 
 func (r VersionResult) String() string {
 	return fmt.Sprintf("{Min:%d, Max:%d}", r.Min, r.Max)
 }
 
+// QueryVersion 读取本地工作副本元数据，不连接仓库。
+// 实际命令: svnversion -n -c <path>
+// path 只能是工作副本路径，不能是仓库 URL。
+// 输出为单一版本号 N，或混合区间 min:max，末尾可带 M/S/P。
+// 使用 -c 时 min:max 是当前树上各节点 last-changed 的最小/最大，
+// 不等于 svn log 的完整历史（中间版本可能不连续，已被后续修改覆盖的提交也不会出现）。
+// 非工作副本时 svnversion 会输出英文说明（如 Unversioned directory），此时解析失败。
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svnversion.re.html
-// path可以为本地副本路径， 也可以是URL
-// path使用URL时支持支持多个路径
-// 版本号是整个svn仓库唯一共享的，所以这里返回的会出现断层情况
 func QueryVersion(path string) (r *VersionResult, err error) {
 	cmd := exec.Command(CommandName, ArgNoNewline, ArgCommitted, path)
 	out, err := cmd.CombinedOutput()

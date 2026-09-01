@@ -1,3 +1,4 @@
+// Package core
 // Create on 2022/7/10
 // @author xuzhuoxi
 package core
@@ -6,9 +7,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"os"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/infra-go/filex"
-	"os"
 )
 
 var (
@@ -69,10 +71,12 @@ func tryHandleArchTask(archTask env.ArchTask) {
 func tryHandleRevArch(archTask env.ArchTask) bool {
 	ctx, err := archTask.GetRevArchContext()
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf("RevArch Error[%s]!", err))
 		return false
 	}
-	archPath := HandleRevArch(ctx)
+	archPath, err := HandleRevArch(ctx)
+	if nil != err {
+		return false
+	}
 	saveArchInfo(archTask.TaskId, archPath)
 	return true
 }
@@ -80,10 +84,12 @@ func tryHandleRevArch(archTask env.ArchTask) bool {
 func tryHandleDateArch(archTask env.ArchTask) bool {
 	ctx, err := archTask.GetDateArchContext()
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf("DateArch Error[%s]!", err))
 		return false
 	}
-	archPath := HandleDateArch(ctx)
+	archPath, err := HandleDateArch(ctx)
+	if nil != err {
+		return false
+	}
 	saveArchInfo(archTask.TaskId, archPath)
 	return true
 }
@@ -91,10 +97,12 @@ func tryHandleDateArch(archTask env.ArchTask) bool {
 func tryHandleRevDiffArch(archTask env.ArchTask) bool {
 	ctx, err := archTask.GetRevDiffArchContext()
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf("RevDiffArch Error[%s]!", err))
 		return false
 	}
-	archPath := HandleRevDiffArch(ctx)
+	archPath, err := HandleRevDiffArch(ctx)
+	if nil != err {
+		return false
+	}
 	saveArchInfo(archTask.TaskId, archPath)
 	return true
 }
@@ -102,10 +110,12 @@ func tryHandleRevDiffArch(archTask env.ArchTask) bool {
 func tryHandleDateDiffArch(archTask env.ArchTask) bool {
 	ctx, err := archTask.GetDateDiffArchContext()
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf("DateDiffArch Error[%s]!", err))
 		return false
 	}
-	archPath := HandleDateDiffArch(ctx)
+	archPath, err := HandleDateDiffArch(ctx)
+	if nil != err {
+		return false
+	}
 	saveArchInfo(archTask.TaskId, archPath)
 	return true
 }

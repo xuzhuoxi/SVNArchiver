@@ -1,16 +1,18 @@
+// Package core
 // Create on 2022/7/8
 // @author xuzhuoxi
 package core
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/env"
 	"github.com/xuzhuoxi/SVNArchiver/src/lib"
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 	"github.com/xuzhuoxi/SVNArchiver/src/svn"
 	"github.com/xuzhuoxi/infra-go/filex"
-	"os"
-	"strconv"
 )
 
 var (
@@ -18,7 +20,7 @@ var (
 	titleRevDiffArch  = `"HandleRevDiffArch"`
 )
 
-func HandleDateDiffArch(ctx *env.ArchDateDiffContext) (archPath string) {
+func HandleDateDiffArch(ctx *env.ArchDateDiffContext) (archPath string, err error) {
 	if nil == ctx {
 		return
 	}
@@ -27,30 +29,39 @@ func HandleDateDiffArch(ctx *env.ArchDateDiffContext) (archPath string) {
 
 	logResult, logRevN, logRevM, err := getRev(ctx)
 	if nil != err {
-		Logger.Warnln(fmt.Sprintf(`%s ["getEvn"] Error[%s]`, titleDataDiffArch, err))
-		return
+		Logger.Warnln(fmt.Sprintf(`%s ["getRev"] Error[%s]`, titleDataDiffArch, err))
+		return "", err
 	}
 
 	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, logRevN.Reversion, logRevM.Reversion)
 	if err != nil {
 		Logger.Warnln(fmt.Sprintf(`%s ["queryDiff diff[%s:%s]"] Error[%s]`,
 			titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), err))
-		return
+		return "", err
 	}
 
-	archPath = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	archPath, err = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	if err != nil {
+		Logger.Warnln(fmt.Sprintf(`%s ["getArchDiffPathD diff[%s:%s]"] Error[%s]`,
+			titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), err))
+		return "", err
+	}
+
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleDataDiffArch, archPath))
 		return
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleDataDiffArch, ctx.DateStartString(), ctx.DateTargetString(), ctx.TargetPath))
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleDataDiffArch)
+	if err = handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleDataDiffArch); err != nil {
+		Logger.Warnln(fmt.Sprintf(`%s ["handleArchDiff2"] Error[%s]`, titleDataDiffArch, err))
+		return "", err
+	}
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleDataDiffArch, fixRevN, fixRevM, archPath))
 	return
 }
 
-func HandleRevDiffArch(ctx *env.ArchRevDiffContext) (archPath string) {
+func HandleRevDiffArch(ctx *env.ArchRevDiffContext) (archPath string, err error) {
 	if nil == ctx {
 		return
 	}
@@ -60,23 +71,32 @@ func HandleRevDiffArch(ctx *env.ArchRevDiffContext) (archPath string) {
 	logResult, err := svn.QueryLog(ctx.TargetPath)
 	if nil != err {
 		Logger.Warnln(fmt.Sprintf(`%s ["svn.QueryLog"] Error[%s]`, titleRevDiffArch, err))
-		return
+		return "", err
 	}
 	diffResult, fixRevN, fixRevM, err := queryDiff(ctx.TargetPath, ctx.RevStart, ctx.RevTarget)
 	if err != nil {
 		Logger.Warnln(fmt.Sprintf(`%s ["queryDiff diff[%s:%s]"] Error[%s]`,
 			titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), err))
-		return
+		return "", err
 	}
 
-	archPath = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	archPath, err = getArchDiffPathD(ctx.ArchPath, logResult, fixRevN, fixRevM)
+	if err != nil {
+		Logger.Warnln(fmt.Sprintf(`%s ["getArchDiffPathD diff[%s:%s]"] Error[%s]`,
+			titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), err))
+		return "", err
+	}
+
 	if !ctx.Override && filex.IsFile(archPath) {
 		Logger.Infoln(fmt.Sprintf(`%s Ignore: file=[%s]`, titleRevDiffArch, archPath))
 		return
 	}
 
 	Logger.Infoln(fmt.Sprintf(`%s Start: diff[%s:%s] -target[%s]`, titleRevDiffArch, ctx.RevStartString(), ctx.RevTargetString(), ctx.TargetPath))
-	handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch)
+	if err = handleArchDiff2(ctx.TargetPath, diffResult, fixRevN, fixRevM, archPath, titleRevDiffArch); err != nil {
+		Logger.Warnln(fmt.Sprintf(`%s ["handleArchDiff2"] Error[%s]`, titleRevDiffArch, err))
+		return "", err
+	}
 	Logger.Infoln(fmt.Sprintf(`%s Finish: diff[%d:%d] file=[%s]`, titleRevDiffArch, fixRevN, fixRevM, archPath))
 	return
 }
@@ -123,14 +143,20 @@ func getArchDiffPathR(archPath string, fixRevN, fixRevM int) string {
 	return archPath
 }
 
-func getArchDiffPathD(archPath string, logResult *model.LogResult, fixRevN, fixRevM int) string {
-	fixLogRevN, _ := logResult.GetLogEntry(fixRevN)
-	fixLogRevM, _ := logResult.GetLogEntry(fixRevM)
+func getArchDiffPathD(archPath string, logResult *model.LogResult, fixRevN, fixRevM int) (string, error) {
+	fixLogRevN, err := logResult.GetLogEntry(fixRevN)
+	if nil != err {
+		return "", err
+	}
+	fixLogRevM, err := logResult.GetLogEntry(fixRevM)
+	if nil != err {
+		return "", err
+	}
 	archPath = env.ReplaceWildcards(archPath, env.WildcardD0, fixLogRevN.GetDateString())
 	archPath = env.ReplaceWildcards(archPath, env.WildcardD1, fixLogRevM.GetDateString())
 	archPath = env.ReplaceWildcards(archPath, env.WildcardR0, fixLogRevN.GetReversionString())
 	archPath = env.ReplaceWildcards(archPath, env.WildcardR1, fixLogRevM.GetReversionString())
-	return archPath
+	return archPath, nil
 }
 
 // 效率低
@@ -177,19 +203,18 @@ func handleArchDiff(targetPath string, diffResult *model.DiffResult, revN, revM 
 // 这个方法的逻辑如下
 // 1. 导出目标版本号的全部
 // 2. 根据差异列表移动文件
-func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string, errTitle string) {
+func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM int, archPath string, errTitle string) error {
 	baseLen := len(targetPath)
 	tempDir1 := getNextTempDir()
 	err := svn.Export(targetPath, revM, tempDir1)
 	if nil != err {
 		Logger.Warnln(fmt.Sprintf(`%s  ["svn exprot"] [-r%d %s] Error[%s]`, errTitle, revM, tempDir1, err))
-		return
+		return err
 	}
 	Logger.Infoln(fmt.Sprintf(`%s  ["svn exprot"] [-r%d %s] succ.`, errTitle, revM, tempDir1))
 	tempDir2 := genNextTempDir()
 	Logger.Infoln(fmt.Sprintf("%s  [\"copy\"]:", errTitle))
-	Logger.Println(fmt.Sprintf("\t%s", tempDir1))
-	Logger.Println(fmt.Sprintf("\t  => %s", tempDir2))
+	Logger.Println(fmt.Sprintf("\t%s  => %s", tempDir1, tempDir2))
 	for _, v := range diffResult.Paths.Paths {
 		if v.IsDeleted() || v.IsDir() {
 			continue
@@ -203,7 +228,8 @@ func handleArchDiff2(targetPath string, diffResult *model.DiffResult, revN, revM
 	err = lib.Archive(tempDir2, archPath, true)
 	if nil != err {
 		Logger.Warnln(fmt.Sprintf(`%s  ["tar"] [%s] Error[%s]`, errTitle, tempDir2, err))
-		return
+		return err
 	}
 	Logger.Infoln(fmt.Sprintf(`%s  ["tar"] [%s] succ.`, errTitle, tempDir2))
+	return nil
 }

@@ -3,9 +3,11 @@ package svn
 import (
 	"encoding/xml"
 	"os/exec"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 )
 
+// QueryInfo
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.info.html
 func QueryInfo(path string) (l *model.InfoResult, err error) {
 	cmd := exec.Command(MainCmd, SubCmdInfo, ArgXml, path)

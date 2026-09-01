@@ -1,9 +1,11 @@
+// Package core
 // Create on 2022/7/15
 // @author xuzhuoxi
 package core
 
 import (
 	"crypto"
+
 	"github.com/xuzhuoxi/infra-go/cryptox"
 )
 

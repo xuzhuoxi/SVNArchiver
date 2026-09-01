@@ -1,14 +1,16 @@
+// Package svn
 // Create on 2022/7/8
 // @author xuzhuoxi
 package svn
 
 import (
-	"os/exec"
 	"encoding/xml"
+	"os/exec"
+
 	"github.com/xuzhuoxi/SVNArchiver/src/model"
 )
 
-
+// QueryStatus
 // https://svnbook.red-bean.com/zh/1.8/svn.ref.svn.c.status.html
 // 功能：针对每个文件或目录，查询最新状态
 // path可以为本地副本路径， 也可以是URL

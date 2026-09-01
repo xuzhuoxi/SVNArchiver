@@ -1,11 +1,13 @@
+// Package env
 // Create on 2022/7/14
 // @author xuzhuoxi
 package env
 
 import (
+	"strings"
+
 	"github.com/xuzhuoxi/infra-go/filex"
 	"github.com/xuzhuoxi/infra-go/osxu"
-	"strings"
 )
 
 type ArchTask struct {
