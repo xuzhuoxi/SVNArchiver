@@ -90,6 +90,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # 手写说明 notes/release/ReleaseNotes_<tag>.md 须与 tag 同名且已在被 tag 的提交中；
         # 有则置于正文最前（同 v1.0.2），再追加自动 notes。
+        # 手写文件已含 **Full Changelog** 时，去掉自动 notes 中的同名行，避免重复。
         # tag 含 "-" 视为预发布（如 v1.0.3-rc.1）。
         # 已存在则覆盖附件并更新正文。
         run: |
@@ -97,16 +98,24 @@ jobs:
 
           notes_file="notes/release/ReleaseNotes_${GITHUB_REF_NAME}.md"
           combined_notes="$(mktemp)"
-
-          if [[ -f "${notes_file}" ]]; then
-            cat "${notes_file}" > "${combined_notes}"
-            printf '\n\n' >> "${combined_notes}"
-          fi
+          auto_notes="$(mktemp)"
 
           gh api --method POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
             -f tag_name="${GITHUB_REF_NAME}" \
             -f target_commitish="${GITHUB_SHA}" \
-            --jq .body >> "${combined_notes}"
+            --jq .body > "${auto_notes}"
+
+          if [[ -f "${notes_file}" ]]; then
+            cat "${notes_file}" > "${combined_notes}"
+            printf '\n\n' >> "${combined_notes}"
+            if grep -qF '**Full Changelog**' "${notes_file}"; then
+              sed '/^\*\*Full Changelog\*\*/d' "${auto_notes}" >> "${combined_notes}"
+            else
+              cat "${auto_notes}" >> "${combined_notes}"
+            fi
+          else
+            cat "${auto_notes}" > "${combined_notes}"
+          fi
 
           prerelease_args=()
           if [[ "${GITHUB_REF_NAME}" == *-* ]]; then

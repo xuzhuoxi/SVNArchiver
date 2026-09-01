@@ -56,6 +56,7 @@ notes/release/ReleaseNotes_<tag>.md
 Release 正文规则：
 
 - 若该文件存在：先写入文件全文（与 GitHub 上 v1.0.2 的手写说明相同），再追加 GitHub 自动生成的 notes。
+- 若该文件存在且已含 `**Full Changelog**`：仍追加自动 notes，但去掉其中的 `**Full Changelog**` 行，避免与手写说明重复。
 - 若该文件不存在：只使用 GitHub 自动生成的 notes（已合并 PR 列表、新贡献者、Full Changelog 链接）。
 
 直接推到 `main`、未走 PR 的 commit 不会出现在「What's Changed」条目中。说明文件必须已经包含在被 tag 的那次提交里。
